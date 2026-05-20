@@ -22,7 +22,13 @@ function parseCookies(req) {
 function createCmsApp(options = {}) {
   const app = express();
 
-  const dataPath = options.dataPath || path.join(process.cwd(), 'data.json');
+  const isVercel = !!process.env.VERCEL;
+
+const dataPath =
+  options.dataPath ||
+  (isVercel
+    ? path.join('/tmp', 'data.json')
+    : path.join(process.cwd(), 'data.json'));
   const uploadsDir = options.uploadsDir || path.join(process.cwd(), 'uploads');
   const serveStaticRoot = options.serveStaticRoot || null;
 
@@ -68,21 +74,38 @@ function createCmsApp(options = {}) {
     }
     try {
       const raw = fs.readFileSync(dataPath, 'utf8');
-      return JSON.parse(raw);
+      try {
+  const raw = fs.readFileSync(dataPath, 'utf8');
+  return raw ? JSON.parse(raw) : {};
+} catch (err) {
+  return {};
+}
     } catch {
       return {};
     }
   }
 
-  async function writeData(data) {
-    if (useSupabase && supabase) {
-      const payload = { key: 'global', value: data };
-      const { error } = await supabase.from('site_data').upsert(payload, { onConflict: 'key' });
-      if (error) throw new Error(error.message || 'Supabase write failed');
-      return;
-    }
-    fs.writeFileSync(dataPath, JSON.stringify(data, null, 2), 'utf8');
+async function writeData(data) {
+  if (useSupabase && supabase) {
+    const payload = { key: 'global', value: data };
+    const { error } = await supabase
+      .from('site_data')
+      .upsert(payload, { onConflict: 'key' });
+
+    if (error) throw new Error(error.message || 'Supabase write failed');
+    return;
   }
+
+  try {
+    const dir = path.dirname(dataPath);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+    fs.writeFileSync(dataPath, JSON.stringify(data, null, 2), 'utf8');
+  } catch (err) {
+    console.error('writeData failed:', err);
+    throw err;
+  }
+}
 
   app.get('/api/verify', (req, res) => {
     res.json({ ok: isAuthenticated(req) });
