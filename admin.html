@@ -1,0 +1,646 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin — Edit site content</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      :root {
+        --surface: #ffffff;
+        --bg: #eef2ff;
+        --text: #0f172a;
+        --muted: #64748b;
+        --border: rgba(148, 163, 184, 0.22);
+        --accent: #6366f1;
+        --accent-soft: rgba(99, 102, 241, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: radial-gradient(circle at top, rgba(99, 102, 241, 0.14), transparent 36%), linear-gradient(180deg, #f8fbff 0%, #eef2ff 100%);
+        font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        color: var(--text);
+      }
+
+      .admin-shell {
+        max-width: 1120px;
+        margin: 24px auto;
+        padding: 0 18px 32px;
+      }
+
+      .admin-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+
+      .admin-title {
+        margin: 0;
+        font-size: clamp(1.8rem, 2.2vw, 2.4rem);
+        letter-spacing: -0.04em;
+      }
+
+      .admin-subtitle {
+        margin: 8px 0 0;
+        max-width: 680px;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .admin-main {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 22px;
+      }
+
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        box-shadow: 0 18px 60px rgba(15, 23, 42, 0.08);
+        padding: 26px;
+      }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .form-row {
+        margin-bottom: 20px;
+      }
+
+      .project-blocks {
+        display: grid;
+        gap: 18px;
+        margin-bottom: 18px;
+      }
+
+      .project-blocks + .button {
+        margin-top: 10px;
+      }
+
+      .project-entry {
+        display: grid;
+        gap: 14px;
+        padding: 18px;
+        border-radius: 20px;
+        background: #f8fafc;
+        border: 1px solid rgba(148, 163, 184, 0.24);
+      }
+
+      .project-entry .project-entry-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .project-entry .remove-project {
+        border: none;
+        background: transparent;
+        color: #ef4444;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .form-label {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--text);
+      }
+
+      .form-input,
+      .form-textarea,
+      .file-input {
+        width: 100%;
+        border-radius: 16px;
+        border: 1px solid rgba(148, 163, 184, 0.24);
+        background: #f8fafc;
+        color: var(--text);
+        font: inherit;
+        padding: 14px 16px;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .form-input:focus,
+      .form-textarea:focus,
+      .file-input:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 6px rgba(99, 102, 241, 0.12);
+      }
+
+      .form-textarea {
+        min-height: 140px;
+        resize: vertical;
+      }
+
+      .upload-row {
+        display: grid;
+        gap: 12px;
+      }
+
+      .upload-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .preview {
+        display: grid;
+        gap: 20px;
+      }
+
+      .avatar-large {
+        width: 160px;
+        height: 160px;
+        border-radius: 999px;
+        object-fit: cover;
+        border: 6px solid rgba(255,255,255,0.85);
+        box-shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
+      }
+
+      .button {
+        border: none;
+        cursor: pointer;
+      }
+
+      .button.primary {
+        color: #fff;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        padding: 14px 22px;
+        border-radius: 999px;
+        box-shadow: 0 18px 40px rgba(99, 102, 241, 0.18);
+      }
+
+      .button.secondary {
+        color: #334155;
+        background: #f1f5f9;
+        padding: 14px 22px;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.26);
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        align-items: center;
+        margin-top: 8px;
+      }
+
+      .muted {
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .fieldset {
+        display: grid;
+        gap: 18px;
+      }
+
+      .admin-note {
+        color: var(--muted);
+        margin: 0;
+      }
+
+      @media (max-width: 980px) {
+        .admin-main {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .admin-shell {
+          padding: 0 14px 24px;
+        }
+
+        .form-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="admin-shell container">
+      <div class="admin-header">
+        <div>
+          <h1 class="admin-title">Admin Dashboard</h1>
+          <p class="admin-subtitle">Update your portfolio content instantly. Upload an avatar, edit your bio, skills, and projects, then save to persist changes.</p>
+        </div>
+        <div class="actions">
+          <a class="button secondary" href="index.html">View live site</a>
+          <button id="logoutBtn" class="button secondary" type="button">Log out</button>
+        </div>
+      </div>
+
+      <div class="admin-main">
+        <section class="card">
+          <div class="fieldset">
+            <div class="form-row">
+              <label class="form-label">Profile picture</label>
+              <img id="avatarPreview" class="avatar-large" src="" alt="Avatar preview" style="display:none;margin-bottom:1rem;" />
+            </div>
+
+            <div class="form-row">
+              <label class="form-label" for="avatarUrl">Profile picture URL</label>
+              <input id="avatarUrl" class="form-input" placeholder="Paste image URL or upload below" />
+            </div>
+
+            <div class="upload-actions">
+              <input id="avatarFile" type="file" accept="image/*" class="file-input" />
+              <button id="uploadBtn" class="button secondary">Upload</button>
+            </div>
+
+            <p class="admin-note">After uploading, click Save changes to persist the new profile image URL.</p>
+
+            <div class="form-row">
+              <label class="form-label" for="name">Name</label>
+              <input id="name" class="form-input" />
+            </div>
+
+            <div class="form-grid">
+              <div class="form-row">
+                <label class="form-label" for="eyebrow">Eyebrow</label>
+                <input id="eyebrow" class="form-input" />
+              </div>
+              <div class="form-row">
+                <label class="form-label" for="headline">Headline</label>
+                <input id="headline" class="form-input" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <label class="form-label" for="intro">Intro</label>
+              <textarea id="intro" class="form-textarea"></textarea>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-row">
+                <label class="form-label" for="aboutHeadline">About headline</label>
+                <input id="aboutHeadline" class="form-input" />
+              </div>
+              <div class="form-row">
+                <label class="form-label" for="contactEmail">Contact email</label>
+                <input id="contactEmail" class="form-input" />
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-row">
+                <label class="form-label" for="experienceYears">Experience years</label>
+                <input id="experienceYears" class="form-input" />
+              </div>
+              <div class="form-row">
+                <label class="form-label" for="experienceText">Experience description</label>
+                <input id="experienceText" class="form-input" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <label class="form-label" for="focusAreas">Focus areas (one per line)</label>
+              <textarea id="focusAreas" class="form-textarea"></textarea>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-row">
+                <label class="form-label" for="githubUrl">GitHub URL</label>
+                <input id="githubUrl" class="form-input" />
+              </div>
+              <div class="form-row">
+                <label class="form-label" for="linkedinUrl">LinkedIn URL</label>
+                <input id="linkedinUrl" class="form-input" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <label class="form-label" for="twitterUrl">Twitter URL</label>
+              <input id="twitterUrl" class="form-input" />
+            </div>
+
+            <div class="form-row">
+              <label class="form-label" for="aboutText">About text</label>
+              <textarea id="aboutText" class="form-textarea"></textarea>
+            </div>
+
+            <div class="form-row">
+              <label class="form-label" for="skills">Skills (one per line: Title — Description)</label>
+              <textarea id="skills" class="form-textarea"></textarea>
+            </div>
+
+            <div class="form-row">
+              <label class="form-label">Projects</label>
+              <div id="projectBlocks" class="project-blocks"></div>
+              <button id="addProjectBtn" class="button secondary" type="button">Add project</button>
+            </div>
+
+            <div class="actions">
+              <button id="saveBtn" class="button primary">Save changes</button>
+              <span id="status" class="muted"></span>
+            </div>
+
+            <div class="form-row">
+              <label class="form-label" for="currentPassword">Current password</label>
+              <input id="currentPassword" type="password" class="form-input" />
+            </div>
+
+            <div class="form-grid">
+              <div class="form-row">
+                <label class="form-label" for="newPassword">New password</label>
+                <input id="newPassword" type="password" class="form-input" />
+              </div>
+              <div class="form-row">
+                <label class="form-label" for="confirmPassword">Confirm new password</label>
+                <input id="confirmPassword" type="password" class="form-input" />
+              </div>
+            </div>
+
+            <div class="actions">
+              <button id="changePasswordBtn" class="button secondary" type="button">Change password</button>
+              <span id="passwordStatus" class="muted"></span>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <script>
+      async function verifyAdmin() {
+        try {
+          const res = await fetch('/api/verify');
+          if (!res.ok) throw new Error('Not authorized');
+          const json = await res.json();
+          if (!json.ok) throw new Error('Not authorized');
+        } catch (err) {
+          window.location.href = '/login.html';
+        }
+      }
+
+      async function load() {
+        const res = await fetch('/api/data');
+        const data = await res.json();
+
+        document.getElementById('name').value = data.name || '';
+        document.getElementById('eyebrow').value = data.eyebrow || '';
+        document.getElementById('headline').value = data.headline || '';
+        document.getElementById('intro').value = data.intro || '';
+        document.getElementById('aboutHeadline').value = data.aboutHeadline || '';
+        document.getElementById('aboutText').value = data.aboutText || '';
+        document.getElementById('experienceYears').value = data.experienceYears || '';
+        document.getElementById('experienceText').value = data.experienceText || '';
+        document.getElementById('focusAreas').value = (data.focusAreas || []).join('\n');
+        document.getElementById('contactEmail').value = data.contactEmail || '';
+        document.getElementById('avatarUrl').value = data.avatarUrl || '';
+        document.getElementById('githubUrl').value = (data.socialLinks && data.socialLinks.github) || '';
+        document.getElementById('linkedinUrl').value = (data.socialLinks && data.socialLinks.linkedin) || '';
+        document.getElementById('twitterUrl').value = (data.socialLinks && data.socialLinks.twitter) || '';
+        document.getElementById('currentPassword').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmPassword').value = '';
+
+        if (data.avatarUrl) {
+          const prev = document.getElementById('avatarPreview');
+          prev.src = data.avatarUrl;
+          prev.style.display = 'block';
+        }
+
+        document.getElementById('skills').value = (data.skills || []).map(s => `${s.title} — ${s.desc}`).join('\n');
+        populateProjectBlocks(data.projects || []);
+      }
+
+      function createProjectBlock(project = {}) {
+        const block = document.createElement('div');
+        block.className = 'project-entry';
+
+        const header = document.createElement('div');
+        header.className = 'project-entry-header';
+
+        const title = document.createElement('strong');
+        title.textContent = 'Project detail';
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'remove-project';
+        removeBtn.textContent = 'Remove';
+        removeBtn.addEventListener('click', () => block.remove());
+
+        header.appendChild(title);
+        header.appendChild(removeBtn);
+
+        const metaRow = document.createElement('div');
+        metaRow.className = 'form-row';
+        const metaLabel = document.createElement('label');
+        metaLabel.className = 'form-label';
+        metaLabel.textContent = 'Meta';
+        const metaInput = document.createElement('input');
+        metaInput.className = 'form-input project-meta-input';
+        metaInput.value = project.meta || '';
+        metaRow.appendChild(metaLabel);
+        metaRow.appendChild(metaInput);
+
+        const titleRow = document.createElement('div');
+        titleRow.className = 'form-row';
+        const titleLabel = document.createElement('label');
+        titleLabel.className = 'form-label';
+        titleLabel.textContent = 'Title';
+        const titleInput = document.createElement('input');
+        titleInput.className = 'form-input project-title-input';
+        titleInput.value = project.title || '';
+        titleRow.appendChild(titleLabel);
+        titleRow.appendChild(titleInput);
+
+        const descRow = document.createElement('div');
+        descRow.className = 'form-row';
+        const descLabel = document.createElement('label');
+        descLabel.className = 'form-label';
+        descLabel.textContent = 'Description';
+        const descInput = document.createElement('textarea');
+        descInput.className = 'form-textarea project-desc-input';
+        descInput.value = project.desc || '';
+        descRow.appendChild(descLabel);
+        descRow.appendChild(descInput);
+
+        block.appendChild(header);
+        block.appendChild(metaRow);
+        block.appendChild(titleRow);
+        block.appendChild(descRow);
+
+        return block;
+      }
+
+      function populateProjectBlocks(projects) {
+        const container = document.getElementById('projectBlocks');
+        if (!container) return;
+        container.innerHTML = '';
+        if (projects.length === 0) {
+          container.appendChild(createProjectBlock({}));
+          return;
+        }
+        projects.forEach((project) => {
+          container.appendChild(createProjectBlock(project));
+        });
+      }
+
+      function parseProjects() {
+        const container = document.getElementById('projectBlocks');
+        if (!container) return [];
+        return Array.from(container.querySelectorAll('.project-entry')).map((block) => {
+          const meta = block.querySelector('.project-meta-input').value.trim();
+          const title = block.querySelector('.project-title-input').value.trim();
+          const desc = block.querySelector('.project-desc-input').value.trim();
+          return { meta, title, desc };
+        }).filter((project) => project.meta || project.title || project.desc);
+      }
+
+      document.getElementById('addProjectBtn').addEventListener('click', () => {
+        const container = document.getElementById('projectBlocks');
+        container.appendChild(createProjectBlock({}));
+      });
+
+      function parseSkills(text) {
+        return text.split('\n').map(line => {
+          const parts = line.split('—');
+          return { title: (parts[0] || '').trim(), desc: (parts[1] || '').trim() };
+        }).filter(s => s.title);
+      }
+
+      document.getElementById('logoutBtn').addEventListener('click', async () => {
+        await fetch('/api/logout', { method: 'POST' });
+        window.location.href = '/login.html';
+      });
+
+      document.getElementById('changePasswordBtn').addEventListener('click', async () => {
+        const currentPassword = document.getElementById('currentPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        const passwordStatus = document.getElementById('passwordStatus');
+
+        if (!currentPassword || !newPassword) {
+          passwordStatus.textContent = 'Enter both your current and new passwords.';
+          passwordStatus.style.color = '#b91c1c';
+          return;
+        }
+
+        if (newPassword !== confirmPassword) {
+          passwordStatus.textContent = 'New password and confirmation do not match.';
+          passwordStatus.style.color = '#b91c1c';
+          return;
+        }
+
+        try {
+          const res = await fetch('/api/change-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ currentPassword, newPassword })
+          });
+          const json = await res.json();
+
+          if (res.ok && json.ok) {
+            passwordStatus.textContent = 'Password updated successfully.';
+            passwordStatus.style.color = '#16a34a';
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+            return;
+          }
+
+          passwordStatus.textContent = json.error || 'Password update failed.';
+          passwordStatus.style.color = '#b91c1c';
+        } catch (err) {
+          passwordStatus.textContent = 'Unable to update password.';
+          passwordStatus.style.color = '#b91c1c';
+        }
+      });
+
+      document.getElementById('saveBtn').addEventListener('click', async () => {
+        const payload = {
+          name: document.getElementById('name').value,
+          eyebrow: document.getElementById('eyebrow').value,
+          headline: document.getElementById('headline').value,
+          intro: document.getElementById('intro').value,
+          aboutHeadline: document.getElementById('aboutHeadline').value,
+          aboutText: document.getElementById('aboutText').value,
+          experienceYears: document.getElementById('experienceYears').value,
+          experienceText: document.getElementById('experienceText').value,
+          focusAreas: document.getElementById('focusAreas').value.split('\n').map(item => item.trim()).filter(Boolean),
+          skills: parseSkills(document.getElementById('skills').value),
+          projects: parseProjects(),
+          contactEmail: document.getElementById('contactEmail').value,
+          avatarUrl: document.getElementById('avatarUrl').value,
+          socialLinks: {
+            github: document.getElementById('githubUrl').value,
+            linkedin: document.getElementById('linkedinUrl').value,
+            twitter: document.getElementById('twitterUrl').value
+          }
+        };
+
+        const status = document.getElementById('status');
+        try {
+          const res = await fetch('/api/data', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const json = await res.json();
+          if (json.ok) {
+            status.textContent = 'Saved.';
+            status.style.color = '#16a34a';
+          } else {
+            status.textContent = 'Error saving.';
+            status.style.color = '#b91c1c';
+          }
+        } catch (err) {
+          status.textContent = 'Error connecting to server.';
+          status.style.color = '#b91c1c';
+        }
+      });
+
+      document.getElementById('uploadBtn').addEventListener('click', async () => {
+        const fileInput = document.getElementById('avatarFile');
+        const status = document.getElementById('status');
+        if (!fileInput.files || !fileInput.files[0]) {
+          status.textContent = 'Choose a file first.';
+          status.style.color = '#b91c1c';
+          return;
+        }
+
+        const fd = new FormData();
+        fd.append('file', fileInput.files[0]);
+
+        try {
+          const res = await fetch('/api/upload', { method: 'POST', body: fd });
+          const json = await res.json();
+          if (json.url) {
+            document.getElementById('avatarUrl').value = json.url;
+            const prev = document.getElementById('avatarPreview');
+            prev.src = json.url;
+            prev.style.display = 'block';
+            status.textContent = 'Uploaded.';
+            status.style.color = '#16a34a';
+          } else {
+            status.textContent = 'Upload failed.';
+            status.style.color = '#b91c1c';
+          }
+        } catch (err) {
+          status.textContent = 'Upload error.';
+          status.style.color = '#b91c1c';
+        }
+      });
+
+      verifyAdmin().then(() => load().catch(() => {}));
+    </script>
+  </body>
+</html>

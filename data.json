@@ -1,0 +1,102 @@
+{
+  "name": "Kalayar Moe Myint",
+  "eyebrow": "Hi, I’m a Web Developer.",
+  "headline": ".NET Web Developer | ASP.NET & MSSQL Developer | Building Business Web Applications",
+  "intro": "I am a passionate .NET Web Developer with experience in developing and maintaining web applications, POS systems, and employee management systems using C#, ASP.NET, .NET Core, MSSQL, MySQL, JavaScript, jQuery, and Bootstrap. I enjoy building efficient, user-friendly, and scalable applications while continuously learning new technologies and improving my technical skills.\n\nI have experience working with Japanese and international companies in remote environments, collaborating with teams to deliver business solutions, fix system issues, improve UI/UX, and optimize application performance. I am also familiar with CMS platforms such as Umbraco and Sitecore, and I have knowledge of additional technologies including Angular, Java, PHP, Go, and MongoDB.\n\nI am a fast learner with strong communication and time management skills, and I am always eager to take on new challenges and expand my knowledge in software development.",
+  "aboutHeadline": "Turning ideas into practical digital solutions  Alternative:  Building reliable and scalable web applications Developing business solutions with modern technologies",
+  "aboutText": "I am a self-motivated and detail-oriented .NET developer with experience working on web applications, POS systems, APIs, and CMS platforms. I have worked with international teams and clients from Japan and Hong Kong, developing and maintaining systems using ASP.NET, .NET Core, MSSQL, JavaScript, and Bootstrap.\n\nI enjoy learning new technologies and improving my development skills. I am passionate about creating efficient, clean, and user-friendly applications that solve real business problems.",
+  "skills": [
+    {
+      "title": "ASP.NET Web Forms",
+      "desc": "Developed business management systems and dynamic web applications"
+    },
+    {
+      "title": "C#",
+      "desc": "Backend development, business logic, and API integration"
+    },
+    {
+      "title": "MSSQL",
+      "desc": "Database design, stored procedures, and query optimization"
+    },
+    {
+      "title": "JavaScript & jQuery",
+      "desc": "Interactive UI and client-side functionality"
+    },
+    {
+      "title": "HTML & CSS",
+      "desc": "Responsive and user-friendly web design"
+    },
+    {
+      "title": "Bootstrap",
+      "desc": "Modern responsive layout development"
+    },
+    {
+      "title": "ASP.NET MVC",
+      "desc": "Developed POS web systems and APIs"
+    },
+    {
+      "title": "Excel Import/Export",
+      "desc": "Implemented Excel, CSV, and PDF export functionality"
+    },
+    {
+      "title": "CMS Development",
+      "desc": "Experience with Umbraco and Sitecore CMS"
+    },
+    {
+      "title": "Git & Version Control",
+      "desc": "Source code management and collaboration"
+    }
+  ],
+  "projects": [
+    {
+      "meta": "Employee Management System",
+      "title": "Developed employee management features including role-based access, Excel import/export, and approval workflows using ASP.NET Web Forms and MSSQL",
+      "desc": "Developed and maintained an Employee Management System using ASP.NET Web Forms, C#, JavaScript, jQuery, and MSSQL. Implemented employee registration, approval workflows, role-based access control, email notifications, Excel import/export functionality, and dynamic reporting features."
+    },
+    {
+      "meta": "POS Web Application",
+      "title": "Built POS web features, API integration, QR payment systems, and reporting functionality using ASP.NET MVC and SQL Server",
+      "desc": "Maintained and enhanced a Point of Sale (POS) Windows Forms application using C# and SQL Server. Improved sales processing, reporting functions, and resolved system bugs and database issues."
+    },
+    {
+      "meta": "E-commerce Website",
+      "title": "Enhanced SEO and developed landing pages for e-commerce platforms using ASP.NET MVC",
+      "desc": "Improved SEO standards and expanded features for e-commerce websites built with ASP.NET MVC. Created product pages, optimized layouts, and enhanced user experience."
+    },
+    {
+      "meta": "CMS Development",
+      "title": "Created and customized CMS templates using Umbraco and Sitecore",
+      "desc": "Created responsive landing pages and backend CMS functionality for product presentation websites using ASP.NET MVC and custom CMS features."
+    },
+    {
+      "meta": "MONJU",
+      "title": "Employee Management",
+      "desc": "Testing"
+    }
+  ],
+  "contactEmail": "comnetkalayar13@example.com",
+  "socialLinks": {
+    "github": "https://github.com/Comnetkalayar",
+    "linkedin": "https://linkedin.com/in/kalayarmoemyint",
+    "twitter": "https://twitter.com/kalayarmoemyint"
+  },
+  "experienceYears": "4+ years",
+  "experienceText": "Experienced .NET Web Developer with hands-on experience in developing and maintaining Employee Management Systems, POS systems, APIs, and E-commerce websites using C#, ASP.NET Web Forms, ASP.NET MVC, JavaScript, jQuery, Bootstrap, MSSQL, and MySQL. Skilled in implementing Excel/PDF/CSV export features, role-based access control, email notifications, dynamic UI development, and database optimization. Experienced in working with international remote teams and delivering business solutions for Japanese and Hong Kong companies. Passionate about building efficient, scalable, and user-friendly applications while continuously learning new technologies.",
+  "focusAreas": [
+    "ASP.NET Web Development",
+    "Backend Development with C#",
+    "Database Design & Optimization",
+    "Business System Development",
+    "POS System Development",
+    "API Development & Integration",
+    "UI/UX Improvement",
+    "Excel/PDF/CSV Export Systems",
+    "CMS Development",
+    "Performance Optimization",
+    "Responsive Web Design",
+    "Problem Solving and  Debugging"
+  ],
+  "adminSalt": "9c8aebad84602b7458bf8cbb7b20251a",
+  "adminPasswordHash": "9f832f826a819a1aeb6db0ccb8837eacea74ccda075e10e885911699d4d40335",
+  "avatarUrl": "/uploads/1779187315850-52172089.png"
+}

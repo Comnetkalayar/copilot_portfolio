@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portfolio | Your Name</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" id="brandName" href="#home">Your Name</a>
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        <nav class="site-nav" id="siteNav">
+          <a href="#about">About</a>
+          <a href="#skills">Skills</a>
+          <a href="#projects">Projects</a>
+          <a href="#contact">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" id="home">
+        <div class="container hero-content">
+          <div>
+            <img id="profileImage" class="profile-avatar" alt="Profile" style="display:none" />
+            <p class="eyebrow" id="eyebrow">Hi, I’m a creative developer.</p>
+            <h1 id="heroHeadline">Building clean digital experiences for modern brands.</h1>
+            <p class="intro" id="introText">
+              I design and develop fast, accessible websites that help clients share their story,
+              launch products, and grow their online presence.
+            </p>
+            <div class="hero-actions">
+              <a class="button primary" href="#projects">View work</a>
+              <a class="button secondary" href="#contact">Let’s connect</a>
+            </div>
+          </div>
+          <div class="hero-panel">
+            <div class="panel-card">
+              <p class="panel-label">Experience</p>
+              <h2 id="experienceYears">5+ years</h2>
+              <p>Designing product-led websites, landing pages, and brand systems.</p>
+            </div>
+            <div class="panel-card">
+              <p class="panel-label">Focus areas</p>
+              <ul id="focusAreas">
+                <li>UI / UX design</li>
+                <li>Frontend development</li>
+                <li>Performance optimization</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="about">
+        <div class="container section-grid">
+          <div>
+            <p class="section-tag">About</p>
+            <h2 id="aboutHeadline">Translating ideas into polished digital products.</h2>
+            <p id="aboutText">
+              I am a full-stack web professional with a passion for crafting intuitive interfaces,
+              thoughtful motion, and accessible experiences. I collaborate closely with teams to
+              deliver fast, scalable websites that look great on every device.
+            </p>
+          </div>
+          <div class="about-list">
+            <div>
+              <strong>Location</strong>
+              <span id="location">Remote / Worldwide</span>
+            </div>
+            <div>
+              <strong>Specialty</strong>
+              <span id="specialty">Front-end architecture, design systems, landing pages</span>
+            </div>
+            <div>
+              <strong>Tools</strong>
+              <span id="tools">HTML, CSS, JavaScript, React, Figma, Git</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-alt" id="skills">
+        <div class="container">
+          <p class="section-tag">Skills</p>
+          <h2>What I do best</h2>
+          <div class="skill-grid" id="skillsList">
+            <!-- Skills will be rendered here from CMS data -->
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="projects">
+        <div class="container">
+          <p class="section-tag">Projects</p>
+          <div class="section-heading">
+            <h2>Selected work</h2>
+          </div>
+          <div class="project-carousel-wrapper">
+            <div class="project-carousel" id="projectsList">
+              <!-- Projects will be rendered here from CMS data -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-contact" id="contact">
+        <div class="container contact-panel">
+          <div class="contact-copy">
+            <p class="section-tag">Contact</p>
+            <h2>Let’s build something together.</h2>
+            <p>
+              I’m available for freelance and full-time opportunities. Share your project details and I’ll respond within one business day.
+            </p>
+            <div class="contact-details">
+              <div>
+                <strong>Email</strong>
+                <a id="contactEmail" href="mailto:hello@example.com">hello@example.com</a>
+              </div>
+              <div>
+                <strong>Availability</strong>
+                <span id="availability">Open for work</span>
+              </div>
+            </div>
+          </div>
+
+          <form class="contact-form" id="contactForm" action="https://formspree.io/f/yourFormId" method="POST" novalidate>
+            <div class="form-field">
+              <label for="name">Name</label>
+              <input id="name" name="name" type="text" required placeholder="Your name" />
+            </div>
+            <div class="form-field">
+              <label for="email">Email</label>
+              <input id="email" name="email" type="email" required placeholder="you@example.com" />
+            </div>
+            <div class="form-field">
+              <label for="subject">Subject</label>
+              <input id="subject" name="subject" type="text" required placeholder="Project title or request" />
+            </div>
+            <div class="form-field">
+              <label for="message">Message</label>
+              <textarea id="message" name="message" rows="5" required placeholder="Tell me about your project"></textarea>
+            </div>
+            <button class="button primary" type="submit">Send message</button>
+            <p class="form-status" id="formStatus" aria-live="polite"></p>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <div class="footer-copy">
+          <p>© <span id="currentYear"></span> Your Name. Crafted with HTML, CSS, and JavaScript.</p>
+          <div class="social-links">
+            <a id="socialGithub" href="https://github.com/yourusername" target="_blank" rel="noreferrer">GitHub</a>
+            <a id="socialLinkedIn" href="https://linkedin.com/in/yourusername" target="_blank" rel="noreferrer">LinkedIn</a>
+            <a id="socialTwitter" href="https://twitter.com/yourusername" target="_blank" rel="noreferrer">Twitter</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
