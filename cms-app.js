@@ -21,7 +21,7 @@ function parseCookies(req) {
         const parts = cookie.split('=');
         return [
           decodeURIComponent(parts.shift().trim()),
-          decodeURIComponent(parts.join('=').trim())
+          decodeURIComponent(parts.join('=').trim()),
         ];
       })
   );
@@ -38,8 +38,7 @@ function createCmsApp(options = {}) {
       ? path.join('/tmp', 'data.json')
       : path.join(process.cwd(), 'data.json'));
 
-  const uploadsDir =
-    options.uploadsDir || path.join(process.cwd(), 'uploads');
+  const uploadsDir = options.uploadsDir || path.join(process.cwd(), 'uploads');
 
   const serveStaticRoot = options.serveStaticRoot || null;
 
@@ -54,16 +53,21 @@ function createCmsApp(options = {}) {
   const SUPABASE_BUCKET = (process.env.SUPABASE_BUCKET || '').trim();
 
   const useSupabase = Boolean(SUPABASE_URL && SUPABASE_KEY);
-  const supabase = useSupabase ? createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+  const supabase = useSupabase
+    ? createClient(SUPABASE_URL, SUPABASE_KEY)
+    : null;
 
   app.use(cors());
   app.use(bodyParser.json({ limit: '1mb' }));
 
   if (serveStaticRoot) {
     app.use(express.static(serveStaticRoot));
+
     if (!fs.existsSync(uploadsDir)) {
       fs.mkdirSync(uploadsDir, { recursive: true });
     }
+
     app.use('/uploads', express.static(uploadsDir));
   }
 
@@ -82,55 +86,58 @@ function createCmsApp(options = {}) {
   }
 
   async function readData() {
+    if (useSupabase && supabase) {
+      const { data, error } = await supabase
+        .from('site_data')
+        .select('value')
+        .eq('key', 'global')
+        .maybeSingle();
+
+      if (error) throw new Error(error.message || 'Supabase read failed');
+
+      return (data && data.value) || {};
+    }
+
     try {
-      if (useSupabase && supabase) {
-        const { data, error } = await supabase
-          .from('site_data')
-          .select('value')
-          .eq('key', 'global')
-          .maybeSingle();
-
-        if (error) {
-          console.error("Supabase read error:", error);
-          return {};
-        }
-
-        return data?.value || {};
-      }
-
-      if (!fs.existsSync(dataPath)) return {};
-
       const raw = fs.readFileSync(dataPath, 'utf8');
-      return raw ? JSON.parse(raw) : {};
 
-    } catch (err) {
-      console.error("readData crash:", err);
+      try {
+        return raw ? JSON.parse(raw) : {};
+      } catch (err) {
+        return {};
+      }
+    } catch {
       return {};
     }
   }
 
   async function writeData(data) {
+    if (useSupabase && supabase) {
+      const payload = { key: 'global', value: data };
+
+      const { error } = await supabase
+        .from('site_data')
+        .upsert(payload, { onConflict: 'key' });
+
+      if (error) throw new Error(error.message || 'Supabase write failed');
+      return;
+    }
+
     try {
-      if (useSupabase && supabase) {
-        const { error } = await supabase
-          .from('site_data')
-          .upsert({ key: 'global', value: data });
+      const dir = path.dirname(dataPath);
 
-        if (error) {
-          console.error("Supabase write error:", error);
-          return;
-        }
-
-        return;
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
       }
 
-      const dir = path.dirname(dataPath);
-      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-
-      fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
-
+      fs.writeFileSync(
+        dataPath,
+        JSON.stringify(data, null, 2),
+        'utf8'
+      );
     } catch (err) {
-      console.error("writeData crash:", err);
+      console.error('writeData failed:', err);
+      throw err;
     }
   }
 
@@ -139,19 +146,19 @@ function createCmsApp(options = {}) {
   });
 
   app.post('/api/login', async (req, res) => {
+    const { password } = req.body || {};
+
+    if (!password) {
+      return res.status(400).json({ error: 'Password is required' });
+    }
+
     try {
-      const { password } = req.body || {};
-
-      if (!password) {
-        return res.status(400).json({ error: 'Password is required' });
-      }
-
       const data = await readData();
 
       if (!data.adminSalt || !data.adminPasswordHash) {
-        return res.status(401).json({
-          error: 'Admin not initialized. Run ensureAdminCredentials()'
-        });
+        return res
+          .status(500)
+          .json({ error: 'Admin credentials not configured' });
       }
 
       const passwordHash = hashPassword(password, data.adminSalt);
@@ -163,14 +170,14 @@ function createCmsApp(options = {}) {
       res.cookie('cmsAuth', 'true', {
         httpOnly: true,
         sameSite: 'lax',
-        maxAge: 86400000
+        maxAge: 24 * 60 * 60 * 1000,
       });
 
       return res.json({ ok: true });
-
     } catch (err) {
-      console.error("LOGIN CRASH:", err);
-      return res.status(500).json({ error: err.message });
+      return res.status(500).json({
+        error: err.message || 'Could not verify credentials',
+      });
     }
   });
 
@@ -183,16 +190,23 @@ function createCmsApp(options = {}) {
     const { currentPassword, newPassword } = req.body || {};
 
     if (!currentPassword || !newPassword) {
-      return res.status(400).json({ error: 'Both current and new passwords are required' });
+      return res.status(400).json({
+        error: 'Both current and new passwords are required',
+      });
     }
 
     try {
       const data = await readData();
 
-      const currentHash = hashPassword(currentPassword, data.adminSalt || '');
+      const currentHash = hashPassword(
+        currentPassword,
+        data.adminSalt || ''
+      );
 
       if (currentHash !== data.adminPasswordHash) {
-        return res.status(401).json({ error: 'Current password is incorrect' });
+        return res
+          .status(401)
+          .json({ error: 'Current password is incorrect' });
       }
 
       const newSalt = crypto.randomBytes(16).toString('hex');
@@ -201,13 +215,14 @@ function createCmsApp(options = {}) {
       await writeData({
         ...data,
         adminSalt: newSalt,
-        adminPasswordHash: newHash
+        adminPasswordHash: newHash,
       });
 
       return res.json({ ok: true });
-
     } catch (err) {
-      return res.status(500).json({ error: err.message || 'Could not update password' });
+      return res.status(500).json({
+        error: err.message || 'Could not update password',
+      });
     }
   });
 
@@ -217,13 +232,18 @@ function createCmsApp(options = {}) {
       const { adminPasswordHash, adminSalt, ...publicData } = data;
       return res.json(publicData);
     } catch (err) {
-      return res.status(500).json({ error: err.message || 'Could not read data' });
+      return res.status(500).json({
+        error: err.message || 'Could not read data',
+      });
     }
   });
 
   app.post('/api/data', requireAuth, async (req, res) => {
     const payload = req.body;
-    if (!payload) return res.status(400).json({ error: 'No data provided' });
+
+    if (!payload) {
+      return res.status(400).json({ error: 'No data provided' });
+    }
 
     try {
       const existing = await readData();
@@ -232,19 +252,22 @@ function createCmsApp(options = {}) {
         ...existing,
         ...payload,
         adminSalt: existing.adminSalt,
-        adminPasswordHash: existing.adminPasswordHash
+        adminPasswordHash: existing.adminPasswordHash,
       });
 
       return res.json({ ok: true });
-
     } catch (err) {
-      return res.status(500).json({ error: err.message || 'Could not save data' });
+      return res.status(500).json({
+        error: err.message || 'Could not save data',
+      });
     }
   });
 
-  // ✅ FIXED UPLOAD ROUTE (MAIN FIX)
-  app.post('/api/upload', requireAuth, upload.single('file'), async (req, res) => {
-    try {
+  app.post(
+    '/api/upload',
+    requireAuth,
+    upload.single('file'),
+    async (req, res) => {
       if (!req.file) {
         return res.status(400).json({ error: 'No file uploaded' });
       }
@@ -252,28 +275,27 @@ function createCmsApp(options = {}) {
       const ext = path.extname(req.file.originalname || '') || '';
       const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
 
-      // SUPABASE UPLOAD (VERCEL)
       if (useSupabase && SUPABASE_BUCKET && supabase) {
         const { error: uploadError } = await supabase.storage
           .from(SUPABASE_BUCKET)
           .upload(filename, req.file.buffer, {
             upsert: true,
-            contentType: req.file.mimetype
+            contentType: req.file.mimetype,
           });
 
         if (uploadError) {
-          console.error("UPLOAD ERROR:", uploadError);
-          return res.status(500).json({ error: uploadError.message });
+          return res.status(500).json({
+            error: uploadError.message || 'Upload failed',
+          });
         }
 
-        const { data } = supabase.storage
+        const { data: urlData } = supabase.storage
           .from(SUPABASE_BUCKET)
           .getPublicUrl(filename);
 
-        return res.json({ url: data.publicUrl });
+        return res.json({ url: urlData.publicUrl });
       }
 
-      // LOCAL UPLOAD FALLBACK
       if (!fs.existsSync(uploadsDir)) {
         fs.mkdirSync(uploadsDir, { recursive: true });
       }
@@ -284,12 +306,8 @@ function createCmsApp(options = {}) {
       );
 
       return res.json({ url: `/uploads/${filename}` });
-
-    } catch (err) {
-      console.error("UPLOAD CRASH:", err);
-      return res.status(500).json({ error: err.message });
     }
-  });
+  );
 
   app.get('/api/health', async (req, res) => {
     if (!useSupabase || !supabase) {
@@ -301,7 +319,12 @@ function createCmsApp(options = {}) {
       .select('key')
       .limit(1);
 
-    if (error) return res.status(500).json({ ok: false, error: error.message });
+    if (error) {
+      return res.status(500).json({
+        ok: false,
+        error: error.message,
+      });
+    }
 
     return res.json({ ok: true, store: 'supabase' });
   });
@@ -316,7 +339,7 @@ function createCmsApp(options = {}) {
       await writeData({
         ...initialData,
         adminSalt: defaultSalt,
-        adminPasswordHash: defaultHash
+        adminPasswordHash: defaultHash,
       });
 
       return true;
@@ -325,7 +348,11 @@ function createCmsApp(options = {}) {
     return false;
   }
 
-  return { app, ensureAdminCredentials, useSupabase };
+  return {
+    app,
+    ensureAdminCredentials,
+    useSupabase,
+  };
 }
 
 module.exports = { createCmsApp };
