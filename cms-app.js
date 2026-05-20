@@ -235,25 +235,37 @@ function createCmsApp(options = {}) {
     const ext = path.extname(req.file.originalname || '') || '';
     const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
 
-    // ✅ SUPABASE UPLOAD
     if (useSupabase && SUPABASE_BUCKET && supabase) {
-      const { error: uploadError } = await supabase.storage
-        .from(SUPABASE_BUCKET)
-        .upload(filename, req.file.buffer, {
-          upsert: true,
-          contentType: req.file.mimetype
-        });
+  try {
+    const { error: uploadError } = await supabase.storage
+      .from(SUPABASE_BUCKET)
+      .upload(filename, req.file.buffer, {
+        upsert: true,
+        contentType: req.file.mimetype
+      });
 
-      if (uploadError) {
-        return res.status(500).json({ error: uploadError.message || 'Upload failed' });
-      }
-
-      const { data: urlData } = supabase.storage
-        .from(SUPABASE_BUCKET)
-        .getPublicUrl(filename);
-
-      return res.json({ url: urlData.publicUrl });
+    if (uploadError) {
+      console.error("SUPABASE UPLOAD ERROR:", uploadError);
+      return res.status(500).json({
+        error: uploadError.message,
+        details: uploadError
+      });
     }
+
+    const { data: urlData } = supabase.storage
+      .from(SUPABASE_BUCKET)
+      .getPublicUrl(filename);
+
+    return res.json({ url: urlData.publicUrl });
+
+  } catch (err) {
+    console.error("UPLOAD CRASH:", err);
+    return res.status(500).json({
+      error: err.message,
+      stack: err.stack
+    });
+  }
+}
 
     // ❗ LOCAL FALLBACK
     try {
