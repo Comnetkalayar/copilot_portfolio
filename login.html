@@ -10,7 +10,7 @@
         margin: 0;
         min-height: 100vh;
         background: radial-gradient(circle at top, rgba(99, 102, 241, 0.16), transparent 36%), linear-gradient(180deg, #f8fbff 0%, #eef2ff 100%);
-        font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-family: system-ui, sans-serif;
         color: #0f172a;
       }
 
@@ -32,25 +32,11 @@
         box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
       }
 
-      .login-card h1 {
-        margin: 0 0 16px;
-        font-size: clamp(1.9rem, 2.4vw, 2.3rem);
-      }
-
-      .login-card p {
-        margin: 0 0 24px;
-        color: #64748b;
-        line-height: 1.75;
-      }
-
-      .form-row {
-        margin-bottom: 18px;
-      }
+      .form-row { margin-bottom: 18px; }
 
       .form-label {
         display: block;
         margin-bottom: 10px;
-        font-size: 0.95rem;
         font-weight: 700;
       }
 
@@ -61,74 +47,84 @@
         background: #f8fafc;
         padding: 14px 16px;
         font: inherit;
-        color: #0f172a;
-      }
-
-      .login-note {
-        margin-top: 18px;
-        color: #64748b;
-        font-size: 0.95rem;
       }
 
       .login-actions {
         display: flex;
         justify-content: space-between;
-        align-items: center;
         gap: 12px;
         flex-wrap: wrap;
       }
+
+      .button {
+        padding: 10px 16px;
+        border-radius: 12px;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+      }
+
+      .primary { background: #4f46e5; color: white; }
+      .secondary { background: #e2e8f0; color: #0f172a; }
+      .muted { color: #64748b; }
     </style>
   </head>
+
   <body>
     <div class="login-shell">
       <section class="login-card">
         <h1>Admin Login</h1>
-        <p>Sign in to manage your portfolio content and update the CMS safely.</p>
+        <p>Sign in to manage your CMS.</p>
 
         <form id="loginForm">
           <div class="form-row">
-            <label class="form-label" for="loginPassword">Password</label>
-            <input id="loginPassword" type="password" class="form-input" placeholder="Enter your password" required />
+            <label class="form-label">Password</label>
+            <input id="loginPassword" type="password" class="form-input" required />
           </div>
 
           <div class="login-actions">
             <button type="submit" class="button primary">Sign in</button>
-            <a class="button secondary" href="index.html">Back to site</a>
+            <a class="button secondary" href="index.html">Back</a>
           </div>
 
           <p id="loginStatus" class="muted"></p>
-          <p class="login-note">Default password: <strong>admin123</strong>. Change it after you log in.</p>
         </form>
       </section>
     </div>
 
     <script>
-      document.getElementById('loginForm').addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const password = document.getElementById('loginPassword').value.trim();
-        const status = document.getElementById('loginStatus');
+      const API = "/api";
 
-        status.textContent = '';
-        status.style.color = '#374151';
+      document.getElementById("loginForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const password = document.getElementById("loginPassword").value;
+        const status = document.getElementById("loginStatus");
+
+        status.textContent = "Logging in...";
 
         try {
-          const res = await fetch('/api/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+          const res = await fetch(`${API}/login`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+
+            // 🔥 IMPORTANT FIX FOR VERCEL COOKIES
+            credentials: "include",
+
             body: JSON.stringify({ password })
           });
 
-          const json = await res.json();
-          if (res.ok && json.ok) {
-            window.location.href = '/admin.html';
-            return;
-          }
+          const data = await res.json();
 
-          status.textContent = json.error || 'Login failed. Please try again.';
-          status.style.color = '#b91c1c';
+          if (res.ok && data.ok) {
+            window.location.href = "/admin.html";
+          } else {
+            status.textContent = data.error || "Login failed";
+          }
         } catch (err) {
-          status.textContent = 'Unable to connect to the server.';
-          status.style.color = '#b91c1c';
+          status.textContent = "Server error. Try again.";
         }
       });
     </script>

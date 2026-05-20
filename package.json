@@ -2,8 +2,9 @@
   "name": "portfolio-website",
   "version": "1.0.0",
   "description": "A clean, responsive static portfolio website scaffold built with HTML, CSS, and JavaScript.",
-  "main": "script.js",
+  "main": "server.js",
   "scripts": {
+    "start": "node server.js",
     "serve": "http-server . -p 8000",
     "cms": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -17,6 +18,7 @@
   },
   "dependencies": {
     "body-parser": "^2.2.2",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "multer": "^2.1.1"

@@ -1,3 +1,5 @@
+const cookieParser = require('cookie-parser');
+const cors = require('cors');
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
@@ -9,8 +11,12 @@ const app = express();
 const DATA_PATH = path.join(__dirname, 'data.json');
 const PORT = process.env.PORT || 8080;
 
-app.use(require('cors')());
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
 app.use(bodyParser.json({ limit: '1mb' }));
+app.use(cookieParser());
 
 function hashPassword(password, salt) {
   return crypto.createHmac('sha256', salt).update(password).digest('hex');
@@ -70,7 +76,12 @@ app.post('/api/login', (req, res) => {
     return res.status(401).json({ error: 'Invalid password' });
   }
 
-  res.cookie('cmsAuth', 'true', { httpOnly: true, sameSite: 'lax', maxAge: 24 * 60 * 60 * 1000 });
+  res.cookie('cmsAuth', 'true', {
+  httpOnly: true,
+  sameSite: 'none',
+  secure: true,
+  maxAge: 24 * 60 * 60 * 1000
+});
   res.json({ ok: true });
 });
 
