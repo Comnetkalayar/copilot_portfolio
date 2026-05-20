@@ -82,51 +82,55 @@ function createCmsApp(options = {}) {
   }
 
   async function readData() {
-    if (useSupabase && supabase) {
-      const { data, error } = await supabase
-        .from('site_data')
-        .select('value')
-        .eq('key', 'global')
-        .maybeSingle();
-
-      if (error) throw new Error(error.message || 'Supabase read failed');
-      return (data && data.value) || {};
-    }
-
     try {
+      if (useSupabase && supabase) {
+        const { data, error } = await supabase
+          .from('site_data')
+          .select('value')
+          .eq('key', 'global')
+          .maybeSingle();
+
+        if (error) {
+          console.error("Supabase read error:", error);
+          return {};
+        }
+
+        return data?.value || {};
+      }
+
+      if (!fs.existsSync(dataPath)) return {};
+
       const raw = fs.readFileSync(dataPath, 'utf8');
       return raw ? JSON.parse(raw) : {};
-    } catch {
+
+    } catch (err) {
+      console.error("readData crash:", err);
       return {};
     }
   }
 
   async function writeData(data) {
-    if (useSupabase && supabase) {
-      const payload = { key: 'global', value: data };
-
-      const { error } = await supabase
-        .from('site_data')
-        .upsert(payload, { onConflict: 'key' });
-
-      if (error) throw new Error(error.message || 'Supabase write failed');
-      return;
-    }
-
     try {
-      const dir = path.dirname(dataPath);
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
+      if (useSupabase && supabase) {
+        const { error } = await supabase
+          .from('site_data')
+          .upsert({ key: 'global', value: data });
+
+        if (error) {
+          console.error("Supabase write error:", error);
+          return;
+        }
+
+        return;
       }
 
-      fs.writeFileSync(
-        dataPath,
-        JSON.stringify(data, null, 2),
-        'utf8'
-      );
+      const dir = path.dirname(dataPath);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+      fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
+
     } catch (err) {
-      console.error('writeData failed:', err);
-      throw err;
+      console.error("writeData crash:", err);
     }
   }
 
@@ -135,14 +139,19 @@ function createCmsApp(options = {}) {
   });
 
   app.post('/api/login', async (req, res) => {
-    const { password } = req.body || {};
-    if (!password) return res.status(400).json({ error: 'Password is required' });
-
     try {
+      const { password } = req.body || {};
+
+      if (!password) {
+        return res.status(400).json({ error: 'Password is required' });
+      }
+
       const data = await readData();
 
       if (!data.adminSalt || !data.adminPasswordHash) {
-        return res.status(500).json({ error: 'Admin credentials not configured' });
+        return res.status(401).json({
+          error: 'Admin not initialized. Run ensureAdminCredentials()'
+        });
       }
 
       const passwordHash = hashPassword(password, data.adminSalt);
@@ -154,12 +163,14 @@ function createCmsApp(options = {}) {
       res.cookie('cmsAuth', 'true', {
         httpOnly: true,
         sameSite: 'lax',
-        maxAge: 24 * 60 * 60 * 1000
+        maxAge: 86400000
       });
 
       return res.json({ ok: true });
+
     } catch (err) {
-      return res.status(500).json({ error: err.message || 'Could not verify credentials' });
+      console.error("LOGIN CRASH:", err);
+      return res.status(500).json({ error: err.message });
     }
   });
 
@@ -194,6 +205,7 @@ function createCmsApp(options = {}) {
       });
 
       return res.json({ ok: true });
+
     } catch (err) {
       return res.status(500).json({ error: err.message || 'Could not update password' });
     }
@@ -224,54 +236,44 @@ function createCmsApp(options = {}) {
       });
 
       return res.json({ ok: true });
+
     } catch (err) {
       return res.status(500).json({ error: err.message || 'Could not save data' });
     }
   });
 
- app.post('/api/upload', requireAuth, upload.single('file'), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded' });
-    }
-
-    const ext = path.extname(req.file.originalname || '') || '';
-    const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
-
-    // ❗ MUST USE SUPABASE ONLY FOR VERCEL
-    if (useSupabase && SUPABASE_BUCKET && supabase) {
-      const { error: uploadError } = await supabase.storage
-        .from(SUPABASE_BUCKET)
-        .upload(filename, req.file.buffer, {
-          upsert: true,
-          contentType: req.file.mimetype
-        });
-
-      if (uploadError) {
-        console.error("UPLOAD ERROR:", uploadError);
-        return res.status(500).json({ error: uploadError.message });
+  // ✅ FIXED UPLOAD ROUTE (MAIN FIX)
+  app.post('/api/upload', requireAuth, upload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded' });
       }
 
-      const { data } = supabase.storage
-        .from(SUPABASE_BUCKET)
-        .getPublicUrl(filename);
+      const ext = path.extname(req.file.originalname || '') || '';
+      const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
 
-      return res.json({ url: data.publicUrl });
-    }
+      // SUPABASE UPLOAD (VERCEL)
+      if (useSupabase && SUPABASE_BUCKET && supabase) {
+        const { error: uploadError } = await supabase.storage
+          .from(SUPABASE_BUCKET)
+          .upload(filename, req.file.buffer, {
+            upsert: true,
+            contentType: req.file.mimetype
+          });
 
-    // ❌ FAIL SAFE (DON'T USE LOCAL ON VERCEL)
-    return res.status(500).json({
-      error: "Upload not configured (Supabase missing)"
-    });
+        if (uploadError) {
+          console.error("UPLOAD ERROR:", uploadError);
+          return res.status(500).json({ error: uploadError.message });
+        }
 
-  } catch (err) {
-    console.error("UPLOAD CRASH:", err);
-    return res.status(500).json({ error: err.message });
-  }
-});
+        const { data } = supabase.storage
+          .from(SUPABASE_BUCKET)
+          .getPublicUrl(filename);
 
-    // ❗ LOCAL FALLBACK
-    try {
+        return res.json({ url: data.publicUrl });
+      }
+
+      // LOCAL UPLOAD FALLBACK
       if (!fs.existsSync(uploadsDir)) {
         fs.mkdirSync(uploadsDir, { recursive: true });
       }
@@ -284,6 +286,7 @@ function createCmsApp(options = {}) {
       return res.json({ url: `/uploads/${filename}` });
 
     } catch (err) {
+      console.error("UPLOAD CRASH:", err);
       return res.status(500).json({ error: err.message });
     }
   });
