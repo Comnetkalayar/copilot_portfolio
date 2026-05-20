@@ -229,34 +229,60 @@ function createCmsApp(options = {}) {
     }
   });
 
-  app.post('/api/upload', requireAuth, upload.single('file'), async (req, res) => {
-    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+ app.post('/api/upload', requireAuth, upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    console.log("UPLOAD HIT");
 
     const ext = path.extname(req.file.originalname || '') || '';
     const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
 
-    if (useSupabase && SUPABASE_BUCKET && supabase) {
-  try {
-    const { error: uploadError } = await supabase.storage
-      .from(SUPABASE_BUCKET)
-      .upload(filename, req.file.buffer, {
-        upsert: true,
-        contentType: req.file.mimetype
-      });
+    console.log("ENV CHECK:", {
+      useSupabase,
+      bucket: SUPABASE_BUCKET,
+      hasClient: !!supabase
+    });
 
-    if (uploadError) {
-      console.error("SUPABASE UPLOAD ERROR:", uploadError);
-      return res.status(500).json({
-        error: uploadError.message,
-        details: uploadError
-      });
+    // SUPABASE
+    if (useSupabase && SUPABASE_BUCKET && supabase) {
+      console.log("USING SUPABASE");
+
+      const { error: uploadError } = await supabase.storage
+        .from(SUPABASE_BUCKET)
+        .upload(filename, req.file.buffer, {
+          upsert: true,
+          contentType: req.file.mimetype
+        });
+
+      if (uploadError) {
+        console.error("SUPABASE ERROR:", uploadError);
+        return res.status(500).json({
+          error: uploadError.message,
+          full: uploadError
+        });
+      }
+
+      const { data: urlData } = supabase.storage
+        .from(SUPABASE_BUCKET)
+        .getPublicUrl(filename);
+
+      return res.json({ url: urlData.publicUrl });
     }
 
-    const { data: urlData } = supabase.storage
-      .from(SUPABASE_BUCKET)
-      .getPublicUrl(filename);
+    // LOCAL FALLBACK (Vercel unsafe but debug only)
+    console.log("USING LOCAL STORAGE");
 
-    return res.json({ url: urlData.publicUrl });
+    const dir = uploadsDir;
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
+    fs.writeFileSync(path.join(dir, filename), req.file.buffer);
+
+    return res.json({ url: `/uploads/${filename}` });
 
   } catch (err) {
     console.error("UPLOAD CRASH:", err);
@@ -265,7 +291,7 @@ function createCmsApp(options = {}) {
       stack: err.stack
     });
   }
-}
+});
 
     // ❗ LOCAL FALLBACK
     try {
