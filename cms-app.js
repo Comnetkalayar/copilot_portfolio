@@ -29,7 +29,11 @@ const dataPath =
   (isVercel
     ? path.join('/tmp', 'data.json')
     : path.join(process.cwd(), 'data.json'));
-  const uploadsDir = options.uploadsDir || path.join(process.cwd(), 'uploads');
+  const isVercel = !!process.env.VERCEL;
+
+const uploadsDir =
+  options.uploadsDir ||
+  (isVercel ? '/tmp/uploads' : path.join(process.cwd(), 'uploads'));
   const serveStaticRoot = options.serveStaticRoot || null;
 
   const SUPABASE_URL = (process.env.SUPABASE_URL || '').trim();
@@ -88,6 +92,7 @@ const dataPath =
 async function writeData(data) {
   if (useSupabase && supabase) {
     const payload = { key: 'global', value: data };
+
     const { error } = await supabase
       .from('site_data')
       .upsert(payload, { onConflict: 'key' });
@@ -98,11 +103,17 @@ async function writeData(data) {
 
   try {
     const dir = path.dirname(dataPath);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
 
-    fs.writeFileSync(dataPath, JSON.stringify(data, null, 2), 'utf8');
+    fs.writeFileSync(
+      dataPath,
+      JSON.stringify(data, null, 2),
+      'utf8'
+    );
   } catch (err) {
-    console.error('writeData failed:', err);
+    console.error('Local write failed:', err);
     throw err;
   }
 }
