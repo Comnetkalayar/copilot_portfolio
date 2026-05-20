@@ -235,21 +235,11 @@ function createCmsApp(options = {}) {
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    console.log("UPLOAD HIT");
-
     const ext = path.extname(req.file.originalname || '') || '';
     const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
 
-    console.log("ENV CHECK:", {
-      useSupabase,
-      bucket: SUPABASE_BUCKET,
-      hasClient: !!supabase
-    });
-
-    // SUPABASE
+    // ❗ MUST USE SUPABASE ONLY FOR VERCEL
     if (useSupabase && SUPABASE_BUCKET && supabase) {
-      console.log("USING SUPABASE");
-
       const { error: uploadError } = await supabase.storage
         .from(SUPABASE_BUCKET)
         .upload(filename, req.file.buffer, {
@@ -258,38 +248,25 @@ function createCmsApp(options = {}) {
         });
 
       if (uploadError) {
-        console.error("SUPABASE ERROR:", uploadError);
-        return res.status(500).json({
-          error: uploadError.message,
-          full: uploadError
-        });
+        console.error("UPLOAD ERROR:", uploadError);
+        return res.status(500).json({ error: uploadError.message });
       }
 
-      const { data: urlData } = supabase.storage
+      const { data } = supabase.storage
         .from(SUPABASE_BUCKET)
         .getPublicUrl(filename);
 
-      return res.json({ url: urlData.publicUrl });
+      return res.json({ url: data.publicUrl });
     }
 
-    // LOCAL FALLBACK (Vercel unsafe but debug only)
-    console.log("USING LOCAL STORAGE");
-
-    const dir = uploadsDir;
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-
-    fs.writeFileSync(path.join(dir, filename), req.file.buffer);
-
-    return res.json({ url: `/uploads/${filename}` });
+    // ❌ FAIL SAFE (DON'T USE LOCAL ON VERCEL)
+    return res.status(500).json({
+      error: "Upload not configured (Supabase missing)"
+    });
 
   } catch (err) {
     console.error("UPLOAD CRASH:", err);
-    return res.status(500).json({
-      error: err.message,
-      stack: err.stack
-    });
+    return res.status(500).json({ error: err.message });
   }
 });
 
