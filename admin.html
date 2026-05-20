@@ -473,10 +473,34 @@
         descRow.appendChild(descLabel);
         descRow.appendChild(descInput);
 
+        const goalsRow = document.createElement('div');
+        goalsRow.className = 'form-row';
+        const goalsLabel = document.createElement('label');
+        goalsLabel.className = 'form-label';
+        goalsLabel.textContent = 'Project goals (one per line)';
+        const goalsInput = document.createElement('textarea');
+        goalsInput.className = 'form-textarea project-goals-input';
+        goalsInput.value = Array.isArray(project.goals) ? project.goals.join('\n') : '';
+        goalsRow.appendChild(goalsLabel);
+        goalsRow.appendChild(goalsInput);
+
+        const deliverablesRow = document.createElement('div');
+        deliverablesRow.className = 'form-row';
+        const deliverablesLabel = document.createElement('label');
+        deliverablesLabel.className = 'form-label';
+        deliverablesLabel.textContent = 'Deliverables (one per line)';
+        const deliverablesInput = document.createElement('textarea');
+        deliverablesInput.className = 'form-textarea project-deliverables-input';
+        deliverablesInput.value = Array.isArray(project.deliverables) ? project.deliverables.join('\n') : '';
+        deliverablesRow.appendChild(deliverablesLabel);
+        deliverablesRow.appendChild(deliverablesInput);
+
         block.appendChild(header);
         block.appendChild(metaRow);
         block.appendChild(titleRow);
         block.appendChild(descRow);
+        block.appendChild(goalsRow);
+        block.appendChild(deliverablesRow);
 
         return block;
       }
@@ -501,8 +525,22 @@
           const meta = block.querySelector('.project-meta-input').value.trim();
           const title = block.querySelector('.project-title-input').value.trim();
           const desc = block.querySelector('.project-desc-input').value.trim();
-          return { meta, title, desc };
-        }).filter((project) => project.meta || project.title || project.desc);
+          const goals = block.querySelector('.project-goals-input').value
+            .split('\n')
+            .map((item) => item.trim())
+            .filter(Boolean);
+          const deliverables = block.querySelector('.project-deliverables-input').value
+            .split('\n')
+            .map((item) => item.trim())
+            .filter(Boolean);
+          return { meta, title, desc, goals, deliverables };
+        }).filter((project) => (
+          project.meta ||
+          project.title ||
+          project.desc ||
+          project.goals.length ||
+          project.deliverables.length
+        ));
       }
 
       document.getElementById('addProjectBtn').addEventListener('click', () => {

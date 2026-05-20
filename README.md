@@ -40,44 +40,34 @@ npm run cms
 - After logging in, you can change the admin password from the admin panel.
 - While the CMS server is running, the site uses dynamic content from the API.
 
-## Deploying the site publicly
+## Deploying to Vercel (Auto Deploy on Git Push)
 
-This project includes a Node.js CMS backend, so deploy it to a host that supports Node apps.
+This repository is now Vercel-ready:
 
-### Recommended: Render
+- Static pages are served normally.
+- API routes are handled by `api/index.js` (serverless function).
+- Frontend calls `/api/*` endpoints (same paths used in local CMS mode).
 
-1. Push the project to GitHub.
-2. Create a new Web Service on Render.
-3. Connect your GitHub repository.
-4. Set the build command to:
+### One-time setup
 
-```bash
-npm install
-```
+1. Push this repo to GitHub.
+2. In Vercel, create a new project and import this repository.
+3. Add environment variables in Vercel Project Settings:
+   - `SUPABASE_URL`
+   - `SUPABASE_SERVICE_ROLE_KEY` (recommended) or `SUPABASE_KEY`
+   - `SUPABASE_BUCKET` (optional, for uploads)
+4. In Supabase SQL Editor, run:
+   - `sql/create_tables.sql`
+   - `sql/enable_site_data_access.sql` (needed if using publishable/anon key)
 
-5. Set the start command to:
+### Auto deploy behavior
 
-```bash
-npm run cms
-```
+- After the Vercel project is connected, every push to your production branch (usually `main`) triggers an automatic deploy.
 
-6. Deploy and open the public URL Render provides.
+### Local development
 
-### Alternative hosts
-
-- Railway
-- Fly.io
-- Vercel (Node support)
-- DigitalOcean App Platform
-
-### What the host needs
-
-The deployment should start `server.js`, which uses the environment port automatically:
-
-```js
-const PORT = process.env.PORT || 8080;
-```
+- `npm run cms` or `npm start` runs local Express server (`server.js`) for development/testing.
 
 ### Static-only deployment
 
-If you do not need the CMS, host only the static files (`index.html`, `styles.css`, `script.js`) on GitHub Pages, Netlify, or Vercel. For the full admin/editor experience, use a Node host and `npm run cms`.
+If you do not need the CMS, host only the static files (`index.html`, `styles.css`, `script.js`) on GitHub Pages, Netlify, or Vercel. For the full admin/editor experience, keep `/api/*` endpoints deployed and Supabase configured.

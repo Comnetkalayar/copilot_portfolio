@@ -175,9 +175,17 @@ async function populateProjectDetailFromCMS() {
     const titleEl = document.getElementById('projectTitle') || document.querySelector('h1');
     const introEl = document.getElementById('projectIntro') || document.querySelector('.intro');
     const metaEl = document.getElementById('projectMeta') || document.querySelector('.section-tag');
+    const goalsListEl = document.getElementById('projectGoalsList');
+    const deliverablesListEl = document.getElementById('projectDeliverablesList');
     if (titleEl) titleEl.textContent = project.title;
     if (introEl) introEl.textContent = project.desc;
     if (metaEl) metaEl.textContent = project.meta || 'Project';
+    if (goalsListEl && Array.isArray(project.goals) && project.goals.length > 0) {
+      goalsListEl.innerHTML = project.goals.map((goal) => `<li>${goal}</li>`).join('');
+    }
+    if (deliverablesListEl && Array.isArray(project.deliverables) && project.deliverables.length > 0) {
+      deliverablesListEl.innerHTML = project.deliverables.map((deliverable) => `<li>${deliverable}</li>`).join('');
+    }
   } catch (err) {
     // ignore
   }
