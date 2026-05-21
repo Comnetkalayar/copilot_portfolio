@@ -655,27 +655,35 @@
           return;
         }
 
-        const fd = new FormData();
-        fd.append('file', fileInput.files[0]);
-
-        try {
-          const res = await fetch('/api/upload', { method: 'POST', body: fd });
-          const json = await res.json();
-          if (json.url) {
-            document.getElementById('avatarUrl').value = json.url;
-            const prev = document.getElementById('avatarPreview');
-            prev.src = json.url;
-            prev.style.display = 'block';
-            status.textContent = 'Uploaded.';
-            status.style.color = '#16a34a';
-          } else {
-            status.textContent = 'Upload failed.';
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+        reader.onload = async () => {
+          const dataUrl = reader.result; // data:<type>;base64,...
+          const base64 = dataUrl.split(',')[1];
+          try {
+            const res = await fetch('/api/upload', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ filename: file.name, contentType: file.type, data: base64 })
+            });
+            const json = await res.json();
+            if (json.url) {
+              document.getElementById('avatarUrl').value = json.url;
+              const prev = document.getElementById('avatarPreview');
+              prev.src = json.url;
+              prev.style.display = 'block';
+              status.textContent = 'Uploaded.';
+              status.style.color = '#16a34a';
+            } else {
+              status.textContent = 'Upload failed.';
+              status.style.color = '#b91c1c';
+            }
+          } catch (err) {
+            status.textContent = 'Upload error.';
             status.style.color = '#b91c1c';
           }
-        } catch (err) {
-          status.textContent = 'Upload error.';
-          status.style.color = '#b91c1c';
-        }
+        };
+        reader.readAsDataURL(file);
       });
 
       verifyAdmin().then(() => load().catch(() => {}));
