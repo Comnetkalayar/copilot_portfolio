@@ -15,6 +15,11 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Hide main content until CMS data is applied to avoid showing default placeholders */
+html.cms-loading main {
+  visibility: hidden;
+}
+
 body {
   margin: 0;
   min-height: 100vh;

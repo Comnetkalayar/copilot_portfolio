@@ -4,6 +4,9 @@ const currentYear = document.getElementById('currentYear');
 const contactForm = document.getElementById('contactForm');
 const formStatus = document.getElementById('formStatus');
 
+// Prevent flashing default content until CMS data is applied
+try { document.documentElement.classList.add('cms-loading'); } catch (e) {}
+
 // Try to fetch CMS data and populate the page dynamically when available.
 async function populateFromCMS() {
   try {
@@ -93,7 +96,20 @@ async function populateFromCMS() {
 }
 
 async function startApp() {
-  await populateFromCMS();
+  // Wait for CMS data but don't block forever — use 5s timeout as fallback
+  const loadPromise = populateFromCMS();
+  try {
+    await Promise.race([
+      loadPromise,
+      new Promise((res) => setTimeout(res, 5000)),
+    ]);
+  } catch (e) {
+    // ignore
+  }
+
+  // Remove loading state so page becomes visible
+  try { document.documentElement.classList.remove('cms-loading'); } catch (e) {}
+
   initRevealAnimations();
   initProjectSlider();
   await populateProjectDetailFromCMS();

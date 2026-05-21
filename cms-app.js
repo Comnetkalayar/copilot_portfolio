@@ -51,7 +51,7 @@ function createCmsApp(options = {}) {
     ''
   ).trim();
 
-  const SUPABASE_BUCKET = (process.env.SUPABASE_BUCKET || '').trim();
+  const SUPABASE_BUCKET = (process.env.SUPABASE_BUCKET || 'profilepicture').trim();
 
   const useSupabase = Boolean(SUPABASE_URL && SUPABASE_KEY);
 
@@ -278,28 +278,40 @@ function createCmsApp(options = {}) {
 
       if (useSupabase && SUPABASE_BUCKET && supabase) {
         try {
-          const stream = Readable.from(req.file.buffer);
+          // ensure we pass a Buffer/Uint8Array to Supabase
+          const fileData = req.file.buffer instanceof Buffer ? req.file.buffer : Buffer.from(req.file.buffer);
 
           const { error: uploadError } = await supabase.storage
             .from(SUPABASE_BUCKET)
-            .upload(filename, stream, {
+            .upload(filename, fileData, {
               upsert: true,
               contentType: req.file.mimetype,
             });
 
           if (uploadError) {
-            return res.status(500).json({
-              error: uploadError.message || 'Upload failed',
-            });
+            console.error('Supabase upload error:', uploadError);
+            throw uploadError;
           }
 
-          const { data: urlData } = supabase.storage
+          const { data: urlData, error: urlError } = supabase.storage
             .from(SUPABASE_BUCKET)
             .getPublicUrl(filename);
 
-          return res.json({ url: urlData.publicUrl });
+          if (urlError) console.error('getPublicUrl error:', urlError);
+
+          return res.json({ url: (urlData && urlData.publicUrl) || `/uploads/${filename}` });
         } catch (err) {
-          return res.status(500).json({ error: err.message || 'Upload exception' });
+          console.error('Supabase upload failed, falling back to local store:', err && err.message ? err.message : err);
+
+          // fallback to local file store to avoid 500s
+          try {
+            if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+            fs.writeFileSync(path.join(uploadsDir, filename), req.file.buffer);
+            return res.json({ url: `/uploads/${filename}`, fallback: true });
+          } catch (fsErr) {
+            console.error('Local fallback write failed:', fsErr);
+            return res.status(500).json({ error: fsErr.message || 'Upload failed' });
+          }
         }
       }
 
