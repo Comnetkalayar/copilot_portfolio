@@ -2,6 +2,7 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { Readable } = require('stream');
 const bodyParser = require('body-parser');
 const multer = require('multer');
 const cors = require('cors');
@@ -276,24 +277,30 @@ function createCmsApp(options = {}) {
       const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
 
       if (useSupabase && SUPABASE_BUCKET && supabase) {
-        const { error: uploadError } = await supabase.storage
-          .from(SUPABASE_BUCKET)
-          .upload(filename, req.file.buffer, {
-            upsert: true,
-            contentType: req.file.mimetype,
-          });
+        try {
+          const stream = Readable.from(req.file.buffer);
 
-        if (uploadError) {
-          return res.status(500).json({
-            error: uploadError.message || 'Upload failed',
-          });
+          const { error: uploadError } = await supabase.storage
+            .from(SUPABASE_BUCKET)
+            .upload(filename, stream, {
+              upsert: true,
+              contentType: req.file.mimetype,
+            });
+
+          if (uploadError) {
+            return res.status(500).json({
+              error: uploadError.message || 'Upload failed',
+            });
+          }
+
+          const { data: urlData } = supabase.storage
+            .from(SUPABASE_BUCKET)
+            .getPublicUrl(filename);
+
+          return res.json({ url: urlData.publicUrl });
+        } catch (err) {
+          return res.status(500).json({ error: err.message || 'Upload exception' });
         }
-
-        const { data: urlData } = supabase.storage
-          .from(SUPABASE_BUCKET)
-          .getPublicUrl(filename);
-
-        return res.json({ url: urlData.publicUrl });
       }
 
       if (!fs.existsSync(uploadsDir)) {
