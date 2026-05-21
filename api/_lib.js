@@ -4,15 +4,13 @@ const crypto = require('crypto');
 const { createClient } = require('@supabase/supabase-js');
 
 const SUPABASE_URL = (process.env.SUPABASE_URL || '').trim();
-const SUPABASE_KEY = (
-  process.env.SUPABASE_KEY ||
-  process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  process.env.SUPABASE_ANON_KEY ||
-  ''
-).trim();
+const SUPABASE_KEY = (process.env.SUPABASE_KEY || '').trim();
+const SUPABASE_SERVICE_ROLE_KEY = (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
+const SUPABASE_ANON_KEY = (process.env.SUPABASE_ANON_KEY || '').trim();
 const SUPABASE_BUCKET = (process.env.SUPABASE_BUCKET || 'profilepicture').trim();
-const useSupabase = Boolean(SUPABASE_URL && SUPABASE_KEY);
-const supabase = useSupabase ? createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+const useSupabase = Boolean(SUPABASE_URL && (SUPABASE_KEY || SUPABASE_SERVICE_ROLE_KEY || SUPABASE_ANON_KEY));
+const supabase = SUPABASE_KEY ? createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+const supabaseService = SUPABASE_SERVICE_ROLE_KEY ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY) : null;
 
 const dataPath = path.join(process.cwd(), 'data.json');
 
@@ -77,4 +75,4 @@ async function writeData(payload) {
   fs.writeFileSync(dataPath, JSON.stringify(payload, null, 2), 'utf8');
 }
 
-module.exports = { readData, writeData, isAuthenticated, parseCookies, hashPassword, supabase, SUPABASE_BUCKET };
+module.exports = { readData, writeData, isAuthenticated, parseCookies, hashPassword, supabase, supabaseService, SUPABASE_BUCKET };

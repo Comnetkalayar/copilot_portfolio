@@ -44,20 +44,16 @@ function createCmsApp(options = {}) {
   const serveStaticRoot = options.serveStaticRoot || null;
 
   const SUPABASE_URL = (process.env.SUPABASE_URL || '').trim();
-  const SUPABASE_KEY = (
-    process.env.SUPABASE_KEY ||
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.SUPABASE_ANON_KEY ||
-    ''
-  ).trim();
+  const SUPABASE_KEY = (process.env.SUPABASE_KEY || '').trim();
+  const SUPABASE_SERVICE_ROLE_KEY = (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
+  const SUPABASE_ANON_KEY = (process.env.SUPABASE_ANON_KEY || '').trim();
 
   const SUPABASE_BUCKET = (process.env.SUPABASE_BUCKET || 'profilepicture').trim();
 
-  const useSupabase = Boolean(SUPABASE_URL && SUPABASE_KEY);
+  const useSupabase = Boolean(SUPABASE_URL && (SUPABASE_KEY || SUPABASE_SERVICE_ROLE_KEY || SUPABASE_ANON_KEY));
 
-  const supabase = useSupabase
-    ? createClient(SUPABASE_URL, SUPABASE_KEY)
-    : null;
+  const supabase = SUPABASE_KEY ? createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+  const supabaseService = SUPABASE_SERVICE_ROLE_KEY ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY) : null;
 
   app.use(cors());
   app.use(bodyParser.json({ limit: '1mb' }));
@@ -264,28 +260,53 @@ function createCmsApp(options = {}) {
     }
   });
 
-  app.post(
-    '/api/upload',
-    requireAuth,
-    upload.single('file'),
-    async (req, res) => {
-      if (!req.file) {
-        return res.status(400).json({ error: 'No file uploaded' });
+  app.post('/api/upload', requireAuth, async (req, res) => {
+    try {
+      const contentType = (req.headers['content-type'] || '').toLowerCase();
+
+      let buffer;
+      let filename;
+      let mimeType = 'application/octet-stream';
+
+      if (contentType.includes('multipart/form-data')) {
+        // parse multipart with multer
+        await new Promise((resolve, reject) => {
+          upload.single('file')(req, res, (err) => {
+            if (err) return reject(err);
+            return resolve();
+          });
+        });
+
+        if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+
+        buffer = req.file.buffer;
+        const ext = path.extname(req.file.originalname || '') || '';
+        filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
+        mimeType = req.file.mimetype || mimeType;
+      } else if (contentType.includes('application/json') || contentType.includes('text/json')) {
+        const body = req.body || {};
+        const data = body.data || body.file || null;
+        if (!data) return res.status(400).json({ error: 'No file data' });
+        buffer = Buffer.from(data, 'base64');
+        const ext = path.extname(body.filename || '') || '';
+        filename = body.filename || `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
+        mimeType = body.contentType || body.mimeType || mimeType;
+      } else {
+        return res.status(400).json({ error: 'Unsupported content type' });
       }
 
-      const ext = path.extname(req.file.originalname || '') || '';
-      const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
+      // Ensure uploads dir exists for fallback
+      if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
       if (useSupabase && SUPABASE_BUCKET && supabase) {
         try {
-          // ensure we pass a Buffer/Uint8Array to Supabase
-          const fileData = req.file.buffer instanceof Buffer ? req.file.buffer : Buffer.from(req.file.buffer);
+          const fileData = buffer instanceof Buffer ? buffer : Buffer.from(buffer);
 
           const { error: uploadError } = await supabase.storage
             .from(SUPABASE_BUCKET)
             .upload(filename, fileData, {
               upsert: true,
-              contentType: req.file.mimetype,
+              contentType: mimeType,
             });
 
           if (uploadError) {
@@ -303,10 +324,8 @@ function createCmsApp(options = {}) {
         } catch (err) {
           console.error('Supabase upload failed, falling back to local store:', err && err.message ? err.message : err);
 
-          // fallback to local file store to avoid 500s
           try {
-            if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
-            fs.writeFileSync(path.join(uploadsDir, filename), req.file.buffer);
+            fs.writeFileSync(path.join(uploadsDir, filename), buffer);
             return res.json({ url: `/uploads/${filename}`, fallback: true });
           } catch (fsErr) {
             console.error('Local fallback write failed:', fsErr);
@@ -315,18 +334,19 @@ function createCmsApp(options = {}) {
         }
       }
 
-      if (!fs.existsSync(uploadsDir)) {
-        fs.mkdirSync(uploadsDir, { recursive: true });
+      // local storage
+      try {
+        fs.writeFileSync(path.join(uploadsDir, filename), buffer);
+        return res.json({ url: `/uploads/${filename}` });
+      } catch (fsErr) {
+        console.error('Local write failed:', fsErr);
+        return res.status(500).json({ error: fsErr.message || 'Upload failed' });
       }
-
-      fs.writeFileSync(
-        path.join(uploadsDir, filename),
-        req.file.buffer
-      );
-
-      return res.json({ url: `/uploads/${filename}` });
+    } catch (err) {
+      console.error('Upload handler error:', err);
+      return res.status(500).json({ error: err.message || 'Upload error' });
     }
-  );
+  });
 
   app.get('/api/health', async (req, res) => {
     if (!useSupabase || !supabase) {

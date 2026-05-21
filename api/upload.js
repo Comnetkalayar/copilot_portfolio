@@ -1,4 +1,4 @@
-const { supabase, SUPABASE_BUCKET } = require('./_lib');
+const { supabase, supabaseService, SUPABASE_BUCKET } = require('./_lib');
 
 module.exports = async (req, res) => {
   try {
@@ -18,16 +18,18 @@ module.exports = async (req, res) => {
     const buffer = Buffer.from(payload.data, 'base64');
 
     // upload to supabase storage
-    if (!supabase) {
+    const storageClient = supabaseService || supabase;
+    if (!storageClient) {
       res.statusCode = 500; return res.end(JSON.stringify({ error: 'Supabase not configured' }));
     }
 
-    const { error: uploadError } = await supabase.storage.from(SUPABASE_BUCKET).upload(filename, buffer, { contentType, upsert: true });
+    const { error: uploadError } = await storageClient.storage.from(SUPABASE_BUCKET).upload(filename, buffer, { contentType, upsert: true });
     if (uploadError) {
+      // return server error with message
       res.statusCode = 500; return res.end(JSON.stringify({ error: uploadError.message || 'Upload failed' }));
     }
 
-    const { data: urlData, error: urlError } = supabase.storage.from(SUPABASE_BUCKET).getPublicUrl(filename);
+    const { data: urlData, error: urlError } = storageClient.storage.from(SUPABASE_BUCKET).getPublicUrl(filename);
     if (urlError) console.error('getPublicUrl error', urlError);
 
     res.setHeader('Content-Type', 'application/json');
