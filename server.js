@@ -1,4 +1,4 @@
-const path = require('path');
+console.log('Legacy server moved to server-legacy.js — run `npm run cms` to start locally');
 
 // Avoid starting the legacy Express server when running on Vercel
 if (process.env.VERCEL) {

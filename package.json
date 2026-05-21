@@ -6,7 +6,7 @@
   "scripts": {
     "start": "echo \"Skip start on Vercel (use serverless functions)\"",
     "serve": "http-server . -p 8000",
-    "cms": "node server.js",
+    "cms": "node server-legacy.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
