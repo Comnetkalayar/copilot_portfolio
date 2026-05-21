@@ -5,13 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Login</title>
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="admin.theme.css" />
     <style>
       body {
         margin: 0;
         min-height: 100vh;
-        background: radial-gradient(circle at top, rgba(99, 102, 241, 0.16), transparent 36%), linear-gradient(180deg, #f8fbff 0%, #eef2ff 100%);
+        background: radial-gradient(circle at 10% 10%, rgba(99,102,241,0.08), transparent 20%), linear-gradient(180deg, #0b1220 0%, #05060a 100%);
         font-family: system-ui, sans-serif;
-        color: #0f172a;
+        color: #e6eef8;
       }
 
       .login-shell {
@@ -25,28 +26,34 @@
       .login-card {
         max-width: 420px;
         width: 100%;
-        padding: 32px;
-        border-radius: 28px;
-        background: #ffffff;
-        border: 1px solid rgba(148, 163, 184, 0.16);
-        box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
+        padding: 28px;
+        border-radius: 20px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.05);
+        backdrop-filter: blur(8px);
+        box-shadow: 0 10px 40px rgba(2,6,23,0.6);
       }
 
-      .form-row { margin-bottom: 18px; }
+      .login-card h1{ color: #e6eef8; margin: 0 0 8px; font-size: 1.6rem; font-weight:700 }
+      .login-card p{ color: rgba(230,238,248,0.9) }
+
+      .form-row { margin-bottom: 14px; }
 
       .form-label {
         display: block;
-        margin-bottom: 10px;
-        font-weight: 700;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #cfe6ff;
       }
 
       .form-input {
         width: 100%;
-        border-radius: 16px;
-        border: 1px solid rgba(148, 163, 184, 0.24);
-        background: #f8fafc;
-        padding: 14px 16px;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.03);
+        background: rgba(255,255,255,0.02);
+        padding: 12px 14px;
         font: inherit;
+        color: #e6eef8;
       }
 
       .login-actions {
@@ -64,9 +71,9 @@
         cursor: pointer;
       }
 
-      .primary { background: #4f46e5; color: white; }
-      .secondary { background: #e2e8f0; color: #0f172a; }
-      .muted { color: #64748b; }
+      .primary { background: linear-gradient(90deg,#7c3aed,#06b6d4); color: white; }
+      .secondary { background: rgba(255,255,255,0.02); color: #cfe6ff; border: 1px solid rgba(255,255,255,0.03); }
+      .muted { color: #9fb7d9; }
     </style>
   </head>
 

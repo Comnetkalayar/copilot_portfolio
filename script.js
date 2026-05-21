@@ -22,8 +22,19 @@ async function populateFromCMS() {
     if (data.name) {
       const brand = document.getElementById('brandName');
       if (brand) brand.textContent = data.name;
-      const footerName = document.querySelector('.footer-inner p span');
-      if (footerName) footerName.textContent = data.name;
+      // persist name locally so header shows immediately after admin save
+      try { localStorage.setItem('siteName', data.name); } catch(e){}
+      // footer year span is currentYear; don't overwrite it. update footer label if present
+      const footerLabel = document.querySelector('.footer-copy p');
+      if (footerLabel) footerLabel.textContent = `© ${new Date().getFullYear()} ${data.name}. Crafted with HTML, CSS, and JavaScript.`;
+    } else {
+      // fallback to previously saved site name
+      try {
+        const saved = localStorage.getItem('siteName');
+        if (saved) {
+          const brand = document.getElementById('brandName'); if (brand) brand.textContent = saved;
+        }
+      } catch(e){}
     }
 
     if (data.avatarUrl) {
@@ -63,14 +74,31 @@ async function populateFromCMS() {
     if (data.projects && Array.isArray(data.projects)) {
       const projectsList = document.getElementById('projectsList');
       if (projectsList) {
-        projectsList.innerHTML = data.projects.map((p, i) => `
-          <article class="project-card reveal">
-            <div class="project-meta">${p.meta}</div>
-            <h3>${p.title}</h3>
-            <p>${p.desc}</p>
-            <a class="button secondary project-link" href="project-detail.html?i=${i}">View details</a>
-          </article>
-        `).join('');
+        projectsList.innerHTML = data.projects.map((p, i) => {
+          const tech = p.tech || [];
+          const img = p.image ? `<div class="project-media"><img src="${p.image}" alt="${p.title} screenshot" loading="lazy"/></div>` : '';
+          const liveBtn = p.live ? `<a class="button primary" href="${p.live}" target="_blank" rel="noreferrer">Live</a>` : '';
+          const gitBtn = p.github ? `<a class="button secondary" href="${p.github}" target="_blank" rel="noreferrer">GitHub</a>` : '';
+          return `
+            <article class="project-card" data-index="${i}" data-tech='${JSON.stringify(tech)}' tabindex="0">
+              ${img}
+              <div class="project-body">
+                <div class="project-meta">${p.meta || ''}</div>
+                <h3>${p.title}</h3>
+                <p>${p.desc}</p>
+                <div class="tech-badges">${tech.map(t=>`<span class="tech-badge">${t}</span>`).join('')}</div>
+                <div class="project-actions">
+                  ${liveBtn}
+                  ${gitBtn}
+                  <a class="button outline" href="project-detail.html?i=${i}">Details</a>
+                </div>
+              </div>
+            </article>
+          `;
+        }).join('');
+
+        // initialize card interactions
+        try { initProjectInteractions(); } catch (e) {}
       }
     }
 
@@ -110,12 +138,63 @@ async function startApp() {
   // Remove loading state so page becomes visible
   try { document.documentElement.classList.remove('cms-loading'); } catch (e) {}
 
+  // Hide loading screen element when ready
+  try {
+    const loader = document.getElementById('loadingScreen');
+    if (loader) {
+      loader.setAttribute('aria-hidden', 'true');
+      // remove from DOM after transition
+      setTimeout(() => { try { loader.remove(); } catch (e) {} }, 500);
+    }
+  } catch (e) {}
+
+  // Enhanced interactions
+  try { initHeroTyping(); } catch (e) {}
+  try { initCursorGlow(); } catch (e) {}
+
   initRevealAnimations();
   initProjectSlider();
   await populateProjectDetailFromCMS();
 }
 
 startApp();
+
+// Typing animation for hero headline
+function initHeroTyping() {
+  const el = document.getElementById('heroHeadline');
+  if (!el) return;
+  const staticText = el.dataset.fallback || el.textContent || 'Building clean digital experiences';
+  const variants = [staticText, 'Designing delightful interfaces', 'Shipping reliable production systems'];
+  let vi = 0, ci = 0, deleting = false;
+  el.textContent = '';
+  function step(){
+    const full = variants[vi];
+    if (!deleting) {
+      ci++;
+      el.textContent = full.slice(0,ci);
+      if (ci >= full.length) { deleting = true; setTimeout(step, 1600); return; }
+    } else {
+      ci--;
+      el.textContent = full.slice(0,ci);
+      if (ci <= 0) { deleting = false; vi = (vi+1)%variants.length; setTimeout(step, 300); return; }
+    }
+    setTimeout(step, deleting?40:60);
+  }
+  step();
+}
+
+// Cursor glow
+function initCursorGlow() {
+  let glow = document.querySelector('.cursor-glow');
+  if (!glow) {
+    glow = document.createElement('div'); glow.className = 'cursor-glow'; document.body.appendChild(glow);
+  }
+  window.addEventListener('mousemove', (e)=>{
+    glow.style.left = e.clientX+'px'; glow.style.top = e.clientY+'px'; glow.style.opacity = '1';
+    clearTimeout(glow._fade);
+    glow._fade = setTimeout(()=>{ glow.style.opacity='0'; }, 800);
+  });
+}
 
 function initRevealAnimations() {
   const observer = new IntersectionObserver((entries, obs) => {
@@ -171,6 +250,51 @@ function initProjectSlider() {
     }
     projectsList.scrollTo({ left: projectsList.scrollWidth - projectsList.clientWidth, behavior: 'smooth' });
   });
+
+  // Init basic tilt for mouse/keyboard users
+  initProjectInteractions();
+}
+
+// Project card interactions & tilt
+function initProjectInteractions() {
+  const cards = document.querySelectorAll('.project-card');
+  cards.forEach((card) => {
+    card.style.transformStyle = 'preserve-3d';
+    card.style.transition = 'transform 220ms ease, box-shadow 220ms ease';
+    const rect = () => card.getBoundingClientRect();
+
+    function onMove(e) {
+      const r = rect();
+      const mx = (e.clientX - (r.left + r.width/2)) / (r.width/2);
+      const my = (e.clientY - (r.top + r.height/2)) / (r.height/2);
+      const rx = (-my * 6).toFixed(2);
+      const ry = (mx * 8).toFixed(2);
+      card.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) translateZ(6px)`;
+      card.style.boxShadow = '0 30px 80px rgba(2,6,23,0.6)';
+    }
+
+    function onLeave() {
+      card.style.transform = '';
+      card.style.boxShadow = '';
+    }
+
+    card.addEventListener('mousemove', onMove);
+    card.addEventListener('mouseleave', onLeave);
+    card.addEventListener('blur', onLeave);
+    card.addEventListener('focus', (e) => { card.style.transform = 'perspective(900px) translateZ(6px)'; });
+
+    // subtle parallax for media
+    const img = card.querySelector('img');
+    if (img) {
+      img.style.transition = 'transform 300ms ease';
+      card.addEventListener('mousemove', (e) => {
+        const r = rect();
+        const mx = (e.clientX - (r.left + r.width/2)) / (r.width/2);
+        img.style.transform = `translateX(${mx*6}px) translateZ(8px)`;
+      });
+      card.addEventListener('mouseleave', () => { img.style.transform = ''; });
+    }
+  });
 }
 
 async function populateProjectDetailFromCMS() {
@@ -208,10 +332,41 @@ async function populateProjectDetailFromCMS() {
 }
 
 if (navToggle && siteNav) {
+  // Position the mobile dropdown centered under the burger button and keep it fixed (no scroll repositioning)
+  function positionNav() {
+    try {
+      const rect = navToggle.getBoundingClientRect();
+      siteNav.style.position = 'fixed';
+      // temporarily show to measure if hidden
+      const wasHidden = getComputedStyle(siteNav).display === 'none';
+      if (wasHidden) siteNav.style.display = 'flex';
+      const navRect = siteNav.getBoundingClientRect();
+      // align menu right edge with burger right edge
+      const rightAlignedLeft = Math.round(rect.right - navRect.width);
+      const minLeft = 8;
+      const maxLeft = Math.max(8, window.innerWidth - navRect.width - 8);
+      const clampedLeft = Math.min(Math.max(rightAlignedLeft, minLeft), maxLeft);
+      // position slightly closer to burger (smaller gap)
+      const top = Math.round(rect.bottom + 4);
+      siteNav.style.left = clampedLeft + 'px';
+      siteNav.style.top = top + 'px';
+      if (wasHidden && !siteNav.classList.contains('open')) siteNav.style.display = 'none';
+    } catch (e) {
+      // ignore
+    }
+  }
+
   navToggle.addEventListener('click', () => {
     const isOpen = siteNav.classList.toggle('open');
     navToggle.classList.toggle('open', isOpen);
     navToggle.setAttribute('aria-expanded', String(isOpen));
+    if (isOpen) {
+      positionNav();
+      window.addEventListener('resize', positionNav);
+      // intentionally do NOT reposition on scroll so the menu stays fixed under the burger
+    } else {
+      window.removeEventListener('resize', positionNav);
+    }
   });
 
   // Close menu with Escape
@@ -233,6 +388,7 @@ if (navToggle && siteNav) {
     }
   });
 }
+
 
 document.querySelectorAll('.site-nav a').forEach((link) => {
   link.addEventListener('click', () => {

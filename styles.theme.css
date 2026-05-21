@@ -1,0 +1,87 @@
+/* Theme overrides: dark, glass, gradients, animations */
+:root{
+  --bg-0:#061018; --bg-1:#071427; --glass: rgba(255,255,255,0.04);
+  --muted: #9aa6b2; --text:#e6eef6; --accent-1: #7c5cff; --accent-2:#00e0ff;
+  --glass-border: rgba(255,255,255,0.06);
+  --radius: 14px; --glass-blur: 12px;
+}
+html.cms-loading main{visibility:hidden}
+body{background: radial-gradient(1200px 600px at 10% 10%, rgba(124,92,255,0.08), transparent), linear-gradient(180deg,var(--bg-0),var(--bg-1));color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto;}
+/* animated mesh (simple gradient animation) */
+.mesh-bg{position:fixed;inset:0;z-index:-2;pointer-events:none;background:radial-gradient(circle at 10% 20%, rgba(124,92,255,0.06), transparent 8%), radial-gradient(circle at 80% 80%, rgba(0,224,255,0.04), transparent 10%);animation:meshShift 12s linear infinite;}
+@keyframes meshShift{0%{transform:translateY(0)}50%{transform:translateY(-40px)}100%{transform:translateY(0)}}
+/* Glass navbar */
+.site-header.nav-glass{position:sticky;top:18px;margin:0 24px;padding:10px 18px;background:rgba(4,6,12,0.55);backdrop-filter:blur(6px);border-radius:14px;border:1px solid rgba(255,255,255,0.04);box-shadow:0 6px 18px rgba(2,6,23,0.45);z-index:1000}
+/* Prevent sticky header overlap for anchors and content */
+html{scroll-padding-top:100px}
+.site-header .brand{color:var(--text);font-weight:800}
+.site-nav a{color:var(--muted)}
+.site-nav a.active{color:var(--text);box-shadow:inset 0 -3px 0 linear-gradient(90deg,var(--accent-1),var(--accent-2))}
+/* Hero */
+.hero{padding:8rem 0 4rem;position:relative}
+.profile-avatar{display:none}
+.hero-content{display:grid;grid-template-columns:1.2fr .8fr;gap:2.5rem;align-items:center}
+.hero-panel{background:transparent}
+#heroHeadline{font-size:clamp(2rem,5vw,3.5rem);line-height:1.02;font-weight:800;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 6px 14px rgba(0,0,0,0.45)}
+.hero .intro{color:var(--muted);max-width:44ch}
+.cta{display:inline-flex;gap:.75rem;align-items:center}
+.button.primary{background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:#071427;padding:12px 18px;border-radius:999px}
+.button.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--text);padding:10px 16px;border-radius:999px}
+/* Floating tech icons */
+.floating-icons{position:absolute;right:6%;top:12%;display:flex;flex-direction:column;gap:12px;transform:translateZ(0)}
+.floating-icons img{width:44px;height:44px;border-radius:10px;background:rgba(255,255,255,0.02);padding:8px;box-shadow:0 8px 30px rgba(2,6,23,0.6)}
+/* Projects bento grid */
+.project-carousel, #projectsList{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.25rem}
+.project-card{border-radius:16px;padding:18px;background:rgba(255,255,255,0.96);border:1px solid rgba(0,0,0,0.06);transition:transform .25s ease,box-shadow .25s ease;color:#071427}
+.project-card h3{color:#071427}
+.project-card p, .project-card .project-meta{color:#334155}
+.skill-card{background:rgba(255,255,255,0.96);color:#071427}
+.project-card .project-media img{border-radius:12px}
+.project-card:hover{transform:translateY(-10px) rotateX(4deg);box-shadow:0 30px 80px rgba(2,6,23,0.6);border:1px solid rgba(124,92,255,0.26)}
+.tech-badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.tech-badge{background:rgba(255,255,255,0.03);padding:6px 10px;border-radius:999px;font-size:.82rem;color:var(--muted)}
+/* Cursor glow */
+.cursor-glow{position:fixed;left:0;top:0;width:160px;height:160px;border-radius:50%;pointer-events:none;mix-blend-mode:screen;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(124,92,255,0.22) 0%, rgba(0,224,255,0.08) 40%, transparent 70%);transition:transform .08s linear,opacity .2s linear;opacity:0}
+/* Accessible focus outlines */
+:focus{outline:2px solid rgba(124,92,255,0.14);outline-offset:3px}
+@media(max-width:900px){.hero-content{grid-template-columns:1fr}.project-carousel, #projectsList{grid-template-columns:1fr}}
+
+/* Loading screen */
+.loading-screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(2,6,23,0.6),rgba(2,6,23,0.85));z-index:9999;backdrop-filter:blur(6px);transition:opacity .35s ease}
+.loading-screen[aria-hidden="true"]{opacity:0;pointer-events:none}
+.loading-screen .loader{display:flex;align-items:center;justify-content:center}
+
+/* Project details */
+.project-card{position:relative;overflow:hidden}
+.project-card .project-media img{width:100%;height:160px;object-fit:cover;border-radius:12px;margin-bottom:12px}
+.project-body{padding:8px 0}
+.project-actions{display:flex;gap:8px;align-items:center;margin-top:12px}
+.button.outline{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--text);padding:8px 12px;border-radius:999px}
+
+/* Ensure readable text inside light/translucent cards on dark background */
+.card, .panel, .panel-card, .project-card, .skill-card { color: #071427 }
+.about-list div { color: #071427 }
+.project-card .desc, .project-card p, .skill-card p { color: rgba(7,20,39,0.85) }
+
+/* Contact panel in dark theme: use darker background so text is visible */
+.section-contact .contact-panel{background:linear-gradient(180deg,rgba(255,255,255,0.96),rgba(255,255,255,0.94));color:#071427;border:1px solid rgba(7,20,39,0.06)}
+.section-contact .contact-copy h2, .section-contact .contact-copy p{color:#071427}
+
+/* Ensure project buttons are visible on light cards */
+.project-card .button.primary, .project-card .button.secondary, .project-card .button.outline{
+  display:inline-block;
+  padding:8px 12px;
+  border-radius:10px;
+  text-decoration:none;
+  font-weight:700;
+}
+.project-card .button.primary{background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:#071427;box-shadow:0 10px 28px rgba(124,92,255,0.12)}
+.project-card .button.secondary{background:transparent;border:1px solid rgba(7,20,39,0.06);color:#334155}
+.project-card .button.outline{border:1px solid rgba(7,20,39,0.08);background:rgba(255,255,255,0.95);color:#334155}
+/* Focus styles for accessibility */
+.project-card:focus{outline:2px solid rgba(124,92,255,0.24);outline-offset:6px}
+
+/* Reduce motion preference */
+@media (prefers-reduced-motion: reduce){
+  .mesh-bg, .project-card, .cursor-glow { animation: none !important; transition: none !important; }
+}

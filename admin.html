@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin — Edit site content</title>
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="admin.theme.css" />
     <style>
       :root {
         --surface: #ffffff;
@@ -235,8 +236,12 @@
     </style>
   </head>
   <body>
-    <div class="admin-shell container">
-      <div class="admin-header">
+    <div class="dashboard">
+
+
+      <main class="dashboard-main">
+        <div class="admin-shell container">
+          <div class="admin-header">
         <div>
           <h1 class="admin-title">Admin Dashboard</h1>
           <p class="admin-subtitle">Update your portfolio content instantly. Upload an avatar, edit your bio, skills, and projects, then save to persist changes.</p>
@@ -247,17 +252,19 @@
         </div>
       </div>
 
-      <div class="admin-main">
+      <div id="panel-general" class="admin-main panel-section">
         <section class="card">
           <div class="fieldset">
-            <div class="form-row">
-              <label class="form-label">Profile picture</label>
-              <img id="avatarPreview" class="avatar-large" src="" alt="Avatar preview" style="display:none;margin-bottom:1rem;" />
-            </div>
+            <div id="section-media">
+              <div class="form-row">
+                <label class="form-label">Profile picture</label>
+                <img id="avatarPreview" class="avatar-large" src="" alt="Avatar preview" style="display:none;margin-bottom:1rem;" />
+              </div>
 
-            <div class="form-row">
-              <label class="form-label" for="avatarUrl">Profile picture URL</label>
-              <input id="avatarUrl" class="form-input" placeholder="Paste image URL or upload below" />
+              <div class="form-row">
+                <label class="form-label" for="avatarUrl">Profile picture URL</label>
+                <input id="avatarUrl" class="form-input" placeholder="Paste image URL or upload below" />
+              </div>
             </div>
 
             <div class="upload-actions">
@@ -267,25 +274,27 @@
 
             <p class="admin-note">After uploading, click Save changes to persist the new profile image URL.</p>
 
-            <div class="form-row">
-              <label class="form-label" for="name">Name</label>
-              <input id="name" class="form-input" />
-            </div>
-
-            <div class="form-grid">
+            <div id="section-hero">
               <div class="form-row">
-                <label class="form-label" for="eyebrow">Eyebrow</label>
-                <input id="eyebrow" class="form-input" />
+                <label class="form-label" for="name">Name</label>
+                <input id="name" class="form-input" />
               </div>
-              <div class="form-row">
-                <label class="form-label" for="headline">Headline</label>
-                <input id="headline" class="form-input" />
-              </div>
-            </div>
 
-            <div class="form-row">
-              <label class="form-label" for="intro">Intro</label>
-              <textarea id="intro" class="form-textarea"></textarea>
+              <div class="form-grid">
+                <div class="form-row">
+                  <label class="form-label" for="eyebrow">Eyebrow</label>
+                  <input id="eyebrow" class="form-input" />
+                </div>
+                <div class="form-row">
+                  <label class="form-label" for="headline">Headline</label>
+                  <input id="headline" class="form-input" />
+                </div>
+              </div>
+
+              <div class="form-row">
+                <label class="form-label" for="intro">Intro</label>
+                <textarea id="intro" class="form-textarea"></textarea>
+              </div>
             </div>
 
             <div class="form-grid">
@@ -341,7 +350,7 @@
               <textarea id="skills" class="form-textarea"></textarea>
             </div>
 
-            <div class="form-row">
+            <div id="section-projects" class="form-row">
               <label class="form-label">Projects</label>
               <div id="projectBlocks" class="project-blocks"></div>
               <button id="addProjectBtn" class="button secondary" type="button">Add project</button>
@@ -352,19 +361,21 @@
               <span id="status" class="muted"></span>
             </div>
 
-            <div class="form-row">
-              <label class="form-label" for="currentPassword">Current password</label>
-              <input id="currentPassword" type="password" class="form-input" />
-            </div>
-
-            <div class="form-grid">
+            <div id="section-settings">
               <div class="form-row">
-                <label class="form-label" for="newPassword">New password</label>
-                <input id="newPassword" type="password" class="form-input" />
+                <label class="form-label" for="currentPassword">Current password</label>
+                <input id="currentPassword" type="password" class="form-input" />
               </div>
-              <div class="form-row">
-                <label class="form-label" for="confirmPassword">Confirm new password</label>
-                <input id="confirmPassword" type="password" class="form-input" />
+
+              <div class="form-grid">
+                <div class="form-row">
+                  <label class="form-label" for="newPassword">New password</label>
+                  <input id="newPassword" type="password" class="form-input" />
+                </div>
+                <div class="form-row">
+                  <label class="form-label" for="confirmPassword">Confirm new password</label>
+                  <input id="confirmPassword" type="password" class="form-input" />
+                </div>
               </div>
             </div>
 
@@ -375,8 +386,44 @@
           </div>
         </section>
       </div>
-    </div>
 
+      <!-- Placeholder panels for Hero, Projects, Skills, Media, Settings -->
+      <div id="panel-hero" class="panel-section" style="display:none;padding:18px">
+        <div class="panel card">
+          <h2>Hero</h2>
+          <p>Use the main Overview panel to edit hero fields or click specific fields below.</p>
+        </div>
+      </div>
+
+      <div id="panel-projects" class="panel-section" style="display:none;padding:18px">
+        <div class="panel card">
+          <h2>Projects</h2>
+          <p>Manage projects in the Overview area or use project blocks below.</p>
+        </div>
+      </div>
+
+      <div id="panel-skills" class="panel-section" style="display:none;padding:18px">
+        <div class="panel card">
+          <h2>Skills</h2>
+          <p>Edit skills in the Overview area.</p>
+        </div>
+      </div>
+
+      <div id="panel-media" class="panel-section" style="display:none;padding:18px">
+        <div class="panel card">
+          <h2>Media</h2>
+          <p>Upload and manage images here.</p>
+        </div>
+      </div>
+
+      <div id="panel-settings" class="panel-section" style="display:none;padding:18px">
+        <div class="panel card">
+          <h2>Settings</h2>
+          <p>Site and CMS configuration options.</p>
+        </div>
+      </div>
+
+    <script src="admin.js"></script>
     <script>
       async function verifyAdmin() {
         try {
@@ -636,6 +683,9 @@
           if (json.ok) {
             status.textContent = 'Saved.';
             status.style.color = '#16a34a';
+            try { localStorage.setItem('siteName', payload.name || ''); } catch(e){}
+            // update brand on this page immediately
+            const brand = document.getElementById('brandName'); if (brand && payload.name) brand.textContent = payload.name;
           } else {
             status.textContent = 'Error saving.';
             status.style.color = '#b91c1c';
