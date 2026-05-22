@@ -71,7 +71,7 @@
     const preview = document.querySelector('.preview-frame');
     if(!preview) return;
     inputs.forEach(inp=>inp.addEventListener('input',()=>{
-      preview.querySelector('.pv-name')?.textContent = document.getElementById('name').value || 'Your name';
+      preview.querySelector('.pv-name')?.textContent = document.getElementById('name').value || 'Kalayar Moe Myint';
       preview.querySelector('.pv-headline')?.textContent = document.getElementById('headline').value || 'Building delightful interfaces';
       preview.querySelector('.pv-intro')?.textContent = document.getElementById('intro').value || '';
     }));
