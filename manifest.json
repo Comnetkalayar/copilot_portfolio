@@ -5,8 +5,20 @@
   "name": "my-copilot-portfolio.vercel",
   "orientation": "any",
   "scope": "/",
-  "short_name": "my-copilot-portfolio.vercel",
+  "short_name": "portfolio",
   "start_url": "/",
   "theme_color": "#e03cbf",
-  "description": "Testing my fist app"
+  "description": "Testing my first app",
+  "icons": [
+    {
+      "src": "/upload/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/upload/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }
