@@ -1,0 +1,12 @@
+{
+  "background_color": "#298586",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "my-copilot-portfolio.vercel",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "my-copilot-portfolio.vercel",
+  "start_url": "/",
+  "theme_color": "#e03cbf",
+  "description": "Testing my fist app"
+}
