@@ -2,12 +2,12 @@
   "name": "portfolio-website",
   "version": "1.0.0",
   "description": "A clean, responsive static portfolio website scaffold built with HTML, CSS, and JavaScript.",
-  "scripts": {
-    "start": "echo \"Skip start on Vercel (use serverless functions)\"",
-    "serve": "http-server . -p 8000",
-    "cms": "node server-legacy.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+"scripts": {
+  "dev": "vite",
+  "build": "vite build",
+  "preview": "vite preview",
+  "start": "vite preview"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",
