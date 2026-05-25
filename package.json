@@ -13,7 +13,8 @@
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
-    "http-server": "^14.1.1"
+    "http-server": "^14.1.1",
+    "vite": "^8.0.14"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.27.0",
