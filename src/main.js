@@ -1,11 +1,14 @@
 console.log("App loaded");
 
+// wait DOM
 document.addEventListener("DOMContentLoaded", () => {
-  const loadingScreen = document.getElementById("loadingScreen");
+  // hide loading screen safely
+  const loading = document.getElementById("loadingScreen");
 
-  if (loadingScreen) {
-    setTimeout(() => {
-      loadingScreen.style.display = "none";
-    }, 800);
+  if (loading) {
+    loading.style.display = "none";
   }
+
+  // test if JS is running
+  document.body.style.opacity = "1";
 });
