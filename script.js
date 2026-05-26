@@ -7,10 +7,25 @@ const formStatus = document.getElementById('formStatus');
 // Prevent flashing default content until CMS data is applied
 try { document.documentElement.classList.add('cms-loading'); } catch (e) {}
 
+// Use a remote CMS endpoint when running inside Capacitor or file:// context.
+const CMS_HOST = (() => {
+  const origin = window.location.origin;
+  const protocol = window.location.protocol;
+  const hostname = window.location.hostname;
+  if (origin === 'capacitor://localhost' || protocol === 'file:' || hostname === 'localhost') {
+    // Replace this with the public URL where your site/api is deployed.
+    return 'https://copilot-portfolio.vercel.app/';
+  }
+  return '';
+})();
+
+// If CMS_HOST is set, call the deployed API. Otherwise use a relative path for browser/site hosting.
+const CMS_API_PATH = CMS_HOST ? `${CMS_HOST}/api/data` : './api/data';
+
 // Try to fetch CMS data and populate the page dynamically when available.
 async function populateFromCMS() {
   try {
-    const res = await fetch('./api/data');
+    const res = await fetch(CMS_API_PATH, { cache: 'no-store' });
     if (!res.ok) return;
     const data = await res.json();
 
@@ -303,7 +318,7 @@ async function populateProjectDetailFromCMS() {
   const index = parseInt(params.get('i'), 10);
   if (Number.isNaN(index)) return;
   try {
-    const res = await fetch('./api/data');
+    const res = await fetch(CMS_API_PATH, { cache: 'no-store' });
     if (!res.ok) return;
     const data = await res.json();
     const project = (data.projects && data.projects[index]) || null;
