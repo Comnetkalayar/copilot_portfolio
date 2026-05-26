@@ -2,8 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="manifest.json">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#e03cbf" />
     <title>Admin Login</title>
     <link rel="stylesheet" href="styles.css" />
     <link rel="stylesheet" href="admin.theme.css" />
@@ -101,7 +102,7 @@
     </div>
 
     <script>
-      const API = "/api";
+      const API = "./api";
 
       document.getElementById("loginForm").addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -127,7 +128,7 @@
           const data = await res.json();
 
           if (res.ok && data.ok) {
-            window.location.href = "/admin.html";
+            window.location.href = "admin.html";
           } else {
             status.textContent = data.error || "Login failed";
           }

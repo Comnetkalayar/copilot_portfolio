@@ -2,6 +2,8 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#e03cbf" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin — Dashboard</title>
     <style>
@@ -1013,8 +1015,8 @@
       });
 
       document.getElementById('logoutBtn').addEventListener('click', async () => {
-        await fetch('/api/logout', { method: 'POST' });
-        window.location.href = '/login.html';
+        await fetch('./api/logout', { method: 'POST' });
+        window.location.href = 'login.html';
       });
 
       document.getElementById('uploadBtn').addEventListener('click', async () => {
@@ -1026,7 +1028,7 @@
           const dataUrl = reader.result;
           const base64 = dataUrl.split(',')[1];
           try {
-            const res = await fetch('/api/upload', {
+            const res = await fetch('./api/upload', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ filename: file.name, contentType: file.type, data: base64 })
@@ -1060,7 +1062,7 @@
           return;
         }
         try {
-          const res = await fetch('/api/change-password', {
+          const res = await fetch('./api/change-password', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ currentPassword, newPassword })
@@ -1103,7 +1105,7 @@
           }
         };
         try {
-          const res = await fetch('/api/data', {
+          const res = await fetch('./api/data', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -1121,12 +1123,12 @@
 
       async function verifyAdmin() {
         try {
-          const res = await fetch('/api/verify');
+          const res = await fetch('./api/verify');
           if (!res.ok) throw new Error('Not authorized');
           const json = await res.json();
           if (!json.ok) throw new Error('Not authorized');
         } catch (error) {
-          window.location.href = '/login.html';
+          window.location.href = 'login.html';
         }
       }
 
@@ -1139,7 +1141,7 @@
       }
 
       async function load() {
-        const res = await fetch('/api/data');
+        const res = await fetch('./api/data');
         const data = await res.json();
         document.getElementById('name').value = data.name || '';
         document.getElementById('eyebrow').value = data.eyebrow || '';
@@ -1161,6 +1163,12 @@
       window.addEventListener('load', () => {
         verifyAdmin().then(() => load().catch(console.error));
       });
+
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js').catch(console.error);
+        });
+      }
     </script>
   </body>
 </html>

@@ -10,7 +10,7 @@ try { document.documentElement.classList.add('cms-loading'); } catch (e) {}
 // Try to fetch CMS data and populate the page dynamically when available.
 async function populateFromCMS() {
   try {
-    const res = await fetch('/api/data');
+    const res = await fetch('./api/data');
     if (!res.ok) return;
     const data = await res.json();
 
@@ -303,7 +303,7 @@ async function populateProjectDetailFromCMS() {
   const index = parseInt(params.get('i'), 10);
   if (Number.isNaN(index)) return;
   try {
-    const res = await fetch('/api/data');
+    const res = await fetch('./api/data');
     if (!res.ok) return;
     const data = await res.json();
     const project = (data.projects && data.projects[index]) || null;

@@ -2,8 +2,9 @@
 <html lang="en" class="cms-loading">
   <head>
     <meta charset="UTF-8" />
-     <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="manifest.json">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#e03cbf" />
     <title>Portfolio | Kalayar Moe Myint</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -178,6 +179,13 @@
       </div>
     </footer>
 
-    <script type="module" src="/script.js"></script>
+    <script type="module" src="script.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js').catch(console.error);
+        });
+      }
+    </script>
   </body>
 </html>

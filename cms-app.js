@@ -320,13 +320,13 @@ function createCmsApp(options = {}) {
 
           if (urlError) console.error('getPublicUrl error:', urlError);
 
-          return res.json({ url: (urlData && urlData.publicUrl) || `/uploads/${filename}` });
+          return res.json({ url: (urlData && urlData.publicUrl) || `uploads/${filename}` });
         } catch (err) {
           console.error('Supabase upload failed, falling back to local store:', err && err.message ? err.message : err);
 
           try {
             fs.writeFileSync(path.join(uploadsDir, filename), buffer);
-            return res.json({ url: `/uploads/${filename}`, fallback: true });
+            return res.json({ url: `uploads/${filename}`, fallback: true });
           } catch (fsErr) {
             console.error('Local fallback write failed:', fsErr);
             return res.status(500).json({ error: fsErr.message || 'Upload failed' });
@@ -337,7 +337,7 @@ function createCmsApp(options = {}) {
       // local storage
       try {
         fs.writeFileSync(path.join(uploadsDir, filename), buffer);
-        return res.json({ url: `/uploads/${filename}` });
+        return res.json({ url: `uploads/${filename}` });
       } catch (fsErr) {
         console.error('Local write failed:', fsErr);
         return res.status(500).json({ error: fsErr.message || 'Upload failed' });
