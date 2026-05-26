@@ -71,3 +71,34 @@ This repository is now Vercel-ready:
 ### Static-only deployment
 
 If you do not need the CMS, host only the static files (`index.html`, `styles.css`, `script.js`) on GitHub Pages, Netlify, or Vercel. For the full admin/editor experience, keep `/api/*` endpoints deployed and Supabase configured.
+
+## PWA / APK packaging
+
+1. Build the production site:
+
+```powershell
+npm run build
+```
+
+2. Ensure the generated `dist/` folder contains:
+   - `index.html`
+   - `login.html`
+   - `admin.html`
+   - `project-detail.html`
+   - `manifest.json`
+   - `sw.js`
+   - `icons/`
+
+3. Use a valid PWA-to-APK tool instead of renaming a ZIP file to `.apk`.
+   Recommended options:
+   - `bubblewrap` for Trusted Web Activity
+   - `capacitor` or `cordova` for a native wrapper
+
+4. Example Bubblewrap flow:
+   - Install Bubblewrap: `npm install -g @bubblewrap/cli`
+   - Run: `bubblewrap init --manifest=https://your-site-url/manifest.json`
+   - Build: `bubblewrap build`
+
+5. The APK parse error means the generated package is not a valid Android package, not that the web app code is broken.
+
+6. If you need a local test APK, host the built `dist/` site over HTTPS or deploy it first, then point Bubblewrap at that HTTPS URL.

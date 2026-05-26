@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="manifest" href="manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#e03cbf" />
+    <title>Admin Login</title>
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: radial-gradient(circle at 10% 10%, rgba(99,102,241,0.08), transparent 20%), linear-gradient(180deg, #0b1220 0%, #05060a 100%);
+        font-family: system-ui, sans-serif;
+        color: #e6eef8;
+      }
+
+      .login-shell {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+
+      .login-card {
+        max-width: 420px;
+        width: 100%;
+        padding: 28px;
+        border-radius: 20px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.05);
+        backdrop-filter: blur(8px);
+        box-shadow: 0 10px 40px rgba(2,6,23,0.6);
+      }
+
+      .login-card h1{ color: #e6eef8; margin: 0 0 8px; font-size: 1.6rem; font-weight:700 }
+      .login-card p{ color: rgba(230,238,248,0.9) }
+
+      .form-row { margin-bottom: 14px; }
+
+      .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #cfe6ff;
+      }
+
+      .form-input {
+        width: 100%;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.03);
+        background: rgba(255,255,255,0.02);
+        padding: 12px 14px;
+        font: inherit;
+        color: #e6eef8;
+      }
+
+      .login-actions {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .button {
+        padding: 10px 16px;
+        border-radius: 12px;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+      }
+
+      .primary { background: linear-gradient(90deg,#7c3aed,#06b6d4); color: white; }
+      .secondary { background: rgba(255,255,255,0.02); color: #cfe6ff; border: 1px solid rgba(255,255,255,0.03); }
+      .muted { color: #9fb7d9; }
+    </style>
+    <link rel="stylesheet" crossorigin href="/assets/login-vRpcTlgJ.css">
+    <link rel="stylesheet" crossorigin href="/assets/styles-CjA6NnRv.css">
+  </head>
+
+  <body>
+    <div class="login-shell">
+      <section class="login-card">
+        <h1>Admin Login</h1>
+        <p>Sign in to manage your CMS.</p>
+
+        <form id="loginForm">
+          <div class="form-row">
+            <label class="form-label">Password</label>
+            <input id="loginPassword" type="password" class="form-input" required />
+          </div>
+
+          <div class="login-actions">
+            <button type="submit" class="button primary">Sign in</button>
+            <a class="button secondary" href="index.html">Back</a>
+          </div>
+
+          <p id="loginStatus" class="muted"></p>
+        </form>
+      </section>
+    </div>
+
+    <script>
+      const API = "./api";
+
+      document.getElementById("loginForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const password = document.getElementById("loginPassword").value;
+        const status = document.getElementById("loginStatus");
+
+        status.textContent = "Logging in...";
+
+        try {
+          const res = await fetch(`${API}/login`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+
+            // 🔥 IMPORTANT FIX FOR VERCEL COOKIES
+            credentials: "include",
+
+            body: JSON.stringify({ password })
+          });
+
+          const data = await res.json();
+
+          if (res.ok && data.ok) {
+            window.location.href = "admin.html";
+          } else {
+            status.textContent = data.error || "Login failed";
+          }
+        } catch (err) {
+          status.textContent = "Server error. Try again.";
+        }
+      });
+    </script>
+  </body>
+</html>
